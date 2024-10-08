@@ -12,6 +12,7 @@ conda env create -f environment.yml\
 
 Once created the conda environment can be activated with ```conda activate ampEN``` and run the code in src_x folders.
 
+<!---
 ## Folder Structure
 - **data:** Contains raw data files.
 - **scripts:** Holds code scripts for data processing and analysis.
@@ -198,3 +199,4 @@ The data collected in this work (recording_sECG_and_respiratorySignal.xlsx) is l
 
 The provided code is licenced under the MIT license, see the LICENSE_MIT file.
 
+-->
