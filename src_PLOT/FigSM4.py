@@ -2,6 +2,10 @@
 import pandas as pd
 import numpy as np
 
+import warnings
+warnings.filterwarnings("ignore")
+#to supress RuntimeWarning: Mean of empty slice
+
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
@@ -69,5 +73,5 @@ fig.for_each_yaxis(lambda x: x.update(showgrid=True))
 
 
 fig.show()
-# fig.write_image("../images/FigSM6.png")
-# fig.write_html("../images/FigSM6.html")
+#fig.write_image("../images/FigSM4.png")
+# fig.write_html("../images/FigSM4.html")

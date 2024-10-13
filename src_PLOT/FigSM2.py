@@ -66,5 +66,5 @@ fig.for_each_xaxis(lambda x: x.update(gridwidth=2,showgrid=True,showline=True, l
 fig.for_each_yaxis(lambda x: x.update(gridwidth=2,showgrid=True,showline=True, linewidth=2, linecolor='black', mirror=True))
 
 fig.show()
-fig.write_image("../images/FigSM2.png")
+#fig.write_image("../images/FigSM2.png")
 # fig.write_html("../images/FigSM2.html")
