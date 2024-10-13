@@ -5,8 +5,6 @@ import numpy as np
 import warnings
 warnings.filterwarnings("ignore")
 #to supress RuntimeWarning: Mean of empty slice
-#This is because, we are taking mean across all patients, and some patients don't have data for some time points
-#Thus, the mean of those time points across all patients will be NaN, which is not an error
 
 
 import plotly.graph_objects as go
@@ -20,16 +18,20 @@ data['pat_id']=data['pat_id'].apply(lambda x: "ID"+str(x))
 
 def mappi(fig,df,band_name,color_rgba):
     fig.add_trace(go.Box(
-    y=df['pat_id'],
-    x=df['sez_mean'] - df['pre_mean'],
+    x=df['pat_id'],
+    y=df['sez_mean'] - df['pre_mean'],
     name=band_name,
     marker_color=color_rgba,
     boxpoints="all",
     marker=dict(size=7,color="black",opacity=0.5),
+    #notched=True,
     pointpos=0,
-    boxmean=True,
-    orientation="v",
     jitter=0.1,  # add some jitter on points for better visibility
+    #scalemode='count', #scale violin plot area with total count
+    #box_visible=True, 
+    #meanline_visible=True,
+    #boxmean=True,
+    orientation="v"
     ))
     return fig
 
@@ -67,13 +69,14 @@ fig.add_shape(dict(type="line", xref="paper", yref="paper",
                    x0=0.001, x1=0.001, y0=0, y1=1,line=dict(color='rgba(0,0,0,1)', width=1)))
 fig.add_shape(dict(type="line", xref="paper", yref="paper",
                    x0=0, x1=16, y0=0, y1=0,line=dict(color='rgba(0,0,0,1)', width=1)))
-
+fon_sz=20;
 #Update layout for better visualization
 fig.update_layout(
         legend=dict(orientation="h",yanchor="top",y=0.99,xanchor="center",x=0.5,font=dict(color="blue",size=60)),
+        
         template="plotly_white",
-        font_family="Times new Roman",font_color="black",font_size=20)
+        font_family="Times new Roman",font_color="black",font_size=fon_sz)
 
 fig.show()
-#fig.write_image("../images/Fig4.png")
+fig.write_image("../images/Fig4.png")
 #fig.write_html("../images/Fig4.html")
