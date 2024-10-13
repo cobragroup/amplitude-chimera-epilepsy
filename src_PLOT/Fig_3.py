@@ -2,6 +2,13 @@
 import pandas as pd
 import numpy as np
 
+import warnings
+warnings.filterwarnings("ignore")
+#to supress RuntimeWarning: Mean of empty slice
+#This is because, we are taking mean across all patients, and some patients don't have data for some time points
+#Thus, the mean of those time points across all patients will be NaN, which is not an error
+
+
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
