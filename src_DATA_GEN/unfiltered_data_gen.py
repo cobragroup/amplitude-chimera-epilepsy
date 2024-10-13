@@ -10,7 +10,7 @@ sampling_rate=512;
 bin_size=10;
 
 #Modify the Path here acording to the download location
-data_in_path="../../Documents/"
+data_in_path="/home/sapta/Documents/"
 data_save_path="../data/"
 
 ## Hilbert Transformation and Amplitude Entropy Calculation
@@ -105,11 +105,11 @@ def elecs(t1,t2):
 
     xt1=[];xt2=[];
     for patid in range(1,17):
-        mat_files = glob.glob(os.path.join(data_path+"ID"+str(patid), '*.mat'))
+        mat_files = glob.glob(os.path.join(data_in_path+"ID"+str(patid), '*.mat'))
         no_of_seizures = len(mat_files)
 
         for i in range(1,no_of_seizures+1):
-            filename = os.path.join(data_path, "ID"+str(patid)+"/Sz"+str(i)+".mat")
+            filename = os.path.join(data_in_path, "ID"+str(patid)+"/Sz"+str(i)+".mat")
             mat=scipy.io.loadmat(filename)
             alldata=np.array(mat.get('EEG'))
 
@@ -131,12 +131,12 @@ def elecs(t1,t2):
     outs={'fileID':[],'pat_id':[],'sez_id':[],'sez_len':[],'elec_no':[],'X_t1':[],'X_t2':[],'ampen_t1':[],'ampen_t2':[],'elecs_t1':[],'elecs_t2':[]}
    
     for patid in range(1,17):
-        mat_files = glob.glob(os.path.join(data_path+"ID"+str(patid), '*.mat'))
+        mat_files = glob.glob(os.path.join(data_in_path+"ID"+str(patid), '*.mat'))
         no_of_seizures = len(mat_files)
 
         for i in range(1,no_of_seizures+1):
             #print(patid,",",i)
-            filename = os.path.join(data_path, "ID"+str(patid)+"/Sz"+str(i)+".mat")
+            filename = os.path.join(data_in_path, "ID"+str(patid)+"/Sz"+str(i)+".mat")
             mat=scipy.io.loadmat(filename)
             alldata=np.array(mat.get('EEG'))
 
@@ -174,8 +174,3 @@ st=2.5; ut=4;
 
 outp=pd.DataFrame.from_dict(elecs(st,ut))
 outp.to_json(os.path.join(data_save_path,"all_unfiltered_electrode_data_Swiss-Short_"+str(st)+"_"+str(ut)+".json"), orient='records')
-
-
-# ## Curious case where the AE is almost the same for two seizures 
-# which later led to finite mean but zero sd when averaging over channels
-# See the notebook for details
