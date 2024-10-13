@@ -2,6 +2,11 @@
 import pandas as pd
 import numpy as np
 
+import warnings
+warnings.filterwarnings("ignore")
+#to supress RuntimeWarning: Mean of empty slice
+
+
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
@@ -28,6 +33,7 @@ for ridx in range(1,9): #iterate over rows
     for cidx in range(1,3): #iterate over columns
         tim=time[(t1*60*sampling_rate):(t2*60*sampling_rate)] #showing only time-slice between t1 and t2
         mean=np.array(df.loc[pid-1]['mean_AE'][(t1*60*sampling_rate):(t2*60*sampling_rate)])
+        mean[np.equal(mean, None)]=np.nan #Replace None with 0.0
         #stdd=np.array(df.loc[pid-1]['std_aa'][(2*60*sampling_rate):(5*60*sampling_rate)]) #not showing the std
 
         fig.add_trace(go.Scatter(x=tim,y=mean,
@@ -60,5 +66,5 @@ fig.for_each_xaxis(lambda x: x.update(gridwidth=2,showgrid=True,showline=True, l
 fig.for_each_yaxis(lambda x: x.update(gridwidth=2,showgrid=True,showline=True, linewidth=2, linecolor='black', mirror=True))
 
 fig.show()
-# fig.write_image("../images/FigSM5.png")
-# fig.write_html("../images/FigSM5.html")
+fig.write_image("../images/FigSM2.png")
+# fig.write_html("../images/FigSM2.html")
