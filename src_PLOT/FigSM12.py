@@ -7,8 +7,8 @@ from plotly.subplots import make_subplots
 
 #Creating folder for the SM9 figures
 import os
-if not os.path.exists('../images/figSM7'):
-   os.makedirs('../images/figSM7')
+if not os.path.exists('../images/figSM12'):
+   os.makedirs('../images/figSM12')
    
    
    
@@ -88,7 +88,7 @@ for pid in range(1,17):
         fig.update_annotations(font=dict(family="Times new Roman", size=40))
 
         #fig.show()    
-        fig.write_image("../images/figSM7/FigSM7_ID"+str(pid)+".png")   
+        fig.write_image("../images/figSM12/FigSM12_ID"+str(pid)+".png")   
 
 
 
