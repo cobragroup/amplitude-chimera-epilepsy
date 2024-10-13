@@ -4,10 +4,19 @@ import scipy.signal
 import scipy.io
 import os
 import glob
+import multiprocessing as mp
+
 
 #Global variables
 sampling_rate=512;
 bin_size=10;
+total_patients=16;
+no_of_workers_in_pool=mp.cpu_count();
+# Time points for Fig 2-A,B (2.5 mins and 4 mins) 
+# Make sure this matches with the Fig 2-A,B generation code
+#time point before and after seizure, respectively (in minutes)
+st=2.5; ut=4;
+
 
 #Modify the Path here acording to the download location
 data_in_path="/home/sapta/Documents/"
@@ -32,34 +41,50 @@ def amp_en(alldata, bin_size=bin_size):
     
     return en
 
-# Saving AE with time for all patients and seizures
-output_events={'fileID':[],'pat_id':[],'sez_id':[],'sez_len':[],'elec_no':[],'AE':[]}
 
-for patid in range(1,17):
-    mat_files = glob.glob(os.path.join(data_in_path+"ID"+str(patid), '*.mat'))
-    no_of_seizures = len(mat_files)
-    #print("No of seizures: ", no_of_seizures)
+def unfiltered_data_AE_Worker(params):
+        # Saving AE with time for all patients and seizures
+        output_events={'fileID':[],'pat_id':[],'sez_id':[],'sez_len':[],'elec_no':[],'AE':[]}
+
+        patid, sz_id = params
     
-    #iterating over all the seizures
-    for i in range(1,no_of_seizures+1):
-        filename = os.path.join(data_in_path, "ID"+str(patid)+"/Sz"+str(i)+".mat")
+        filename = os.path.join(data_in_path, "ID"+str(patid)+"/Sz"+str(sz_id)+".mat")
         mat=scipy.io.loadmat(filename)
         data=np.array(mat.get('EEG'))
         
-        print("Processing patient ID"+str(patid)+" Seizure "+str(i))
+        print("Processing patient ID"+str(patid)+" Seizure "+str(sz_id))
 
         #Sampling rate is 512Hz and each seizure preceded and succeeded by a 3 mins long segment
         sez_length=(np.shape(data)[0]/sampling_rate) - (2*3*60) #in seconds
         no_elec=np.shape(data)[1]
         
-        output_events['fileID'].append("p"+str(patid)+"s"+str(i))#Recorded in seconds
+        output_events['fileID'].append("p"+str(patid)+"s"+str(sz_id))#Recorded in seconds
         output_events['pat_id'].append("ID"+str(patid))
         output_events['sez_id'].append(i)#Recorded in seconds
         output_events['sez_len'].append(sez_length)#Recorded in seconds
         output_events['elec_no'].append(no_elec)
         output_events['AE'].append(amp_en(data))
+        
+        return pd.DataFrame.from_dict(output_events)
 
-out=pd.DataFrame.from_dict(output_events)
+#Creating all possible combinations of patients and seizures
+all_comb=[(patid,i) for patid in range(1,total_patients+1) for i in range(1,len(glob.glob(os.path.join(data_in_path+"ID"+str(patid), '*.mat')))+1)]
+
+
+# Running the worker function in parallel
+pool = mp.Pool(no_of_workers_in_pool)
+all_res = [pool.apply_async(unfiltered_data_AE_Worker, (params,)) for params in all_comb]
+# Close the pool and wait for the work to finish
+pool.close()
+pool.join()
+
+#Taking the results from the workers and saving them
+out=pd.DataFrame()
+for dframes in all_res:
+        r=pd.DataFrame.from_dict(dframes.get())
+        if not r.empty:
+            out=pd.concat([out,r], ignore_index=True)
+        
 out.to_json(os.path.join(data_save_path,"all_unfiltered_data_AE_Swiss-Short.json"), orient='records')
 
 # Mean patient AEs with time (which is averaged over seizures per patient)
@@ -81,6 +106,7 @@ def nans(pid):
 
 output={'pat_ID':[],'elec_no':[],'mean_AE':[],'std_AE':[]}
 
+#Not worth time-wise to parallelize this
 for i in range(1,17):
     output['pat_ID'].append("ID"+str(i))
     output['elec_no'].append(out.query('pat_id=="ID'+str(i)+'"')['elec_no'].unique()[0])
@@ -91,8 +117,8 @@ for i in range(1,17):
 df=pd.DataFrame.from_dict(output)
 df.to_json(os.path.join(data_save_path,"all_unfiltered_mean_AE_Swiss-Short.json"), orient='records')
 
-# Saving PMF for all time-points across electrodes for Fig 2-A,B
 
+# Saving PMF for all time-points across electrodes for Fig 2-A,B
 def pmf_calc(chans,mins,maxs):
     hist, bin_edges = np.histogram(chans, bins=np.arange(mins, maxs + bin_size, bin_size))
     bin_edges = 0.5 * (bin_edges[:-1] + bin_edges[1:])
@@ -169,8 +195,6 @@ def elecs(t1,t2):
             outs['ampen_t2'].append(at2)
     return outs
 
-# Time points for Fig 2-A,B (2.5 mins and 4 mins) Make sure this matches with the Fig 2-A,B generation code
-st=2.5; ut=4;
 
 outp=pd.DataFrame.from_dict(elecs(st,ut))
 outp.to_json(os.path.join(data_save_path,"all_unfiltered_electrode_data_Swiss-Short_"+str(st)+"_"+str(ut)+".json"), orient='records')
