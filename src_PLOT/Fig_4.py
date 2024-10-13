@@ -28,7 +28,7 @@ def mappi(fig,df,band_name,color_rgba):
     marker=dict(size=7,color="black",opacity=0.5),
     pointpos=0,
     boxmean=True,
-    orientation="v"
+    orientation="v",
     jitter=0.1,  # add some jitter on points for better visibility
     ))
     return fig
