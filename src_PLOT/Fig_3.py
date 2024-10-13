@@ -97,7 +97,7 @@ def mappi(fig,bd,ridx,cidx,p1,p2,p3):
                 row=ridx, col=cidx)
     return fig
 
-fig = make_subplots(rows=3, cols=2,vertical_spacing=0.03,horizontal_spacing=0.06,shared_xaxes=True,
+fig = make_subplots(rows=2, cols=3,vertical_spacing=0.07,horizontal_spacing=0.05,shared_xaxes=True,
                     subplot_titles=(
                             "Delta (δ) Band",
                             "Theta (θ) Band",
@@ -110,10 +110,10 @@ fig = make_subplots(rows=3, cols=2,vertical_spacing=0.03,horizontal_spacing=0.06
 # See section 3.1 last paragraph of the paper for more details
 mappi(fig,"delta",1,1,"<0.001","ns","<0.001")
 mappi(fig,"theta",1,2,"<0.001","<0.001","ns")
-mappi(fig,"alpha",2,1,"<0.001","<0.001","ns")
-mappi(fig,"beta",2,2,"<0.001","<0.001","<0.001")
-mappi(fig,"lgamma",3,1,"<0.001","<0.001","ns")
-mappi(fig,"hgamma",3,2,"<0.001","<0.001","ns")
+mappi(fig,"alpha",1,3,"<0.001","<0.001","ns")
+mappi(fig,"beta",2,1,"<0.001","<0.001","<0.001")
+mappi(fig,"lgamma",2,2,"<0.001","<0.001","ns")
+mappi(fig,"hgamma",2,3,"<0.001","<0.001","ns")
 
 # Doing the H gamma seperate as it has very small scale and hard to fit in the generall fitting
 means=band_grouped_data.query('band=="hgamma"')[['pre_mean','sez_mean','post_mean']].iloc[0].values
@@ -137,22 +137,22 @@ for bracket in p_value_brackets:
                     x0=bracket['x_coords'][i - 1],x1=bracket['x_coords'][i],
                     y0=bracket['y_coords'][i - 1],y1=bracket['y_coords'][i]),
                     line=dict(color='rgba(0,0,0,1)', width=1.5),
-                    row=3, col=2)
+                    row=2, col=3)
         fig.add_annotation(dict(
                 text=bracket['label'],name="p-value",xref="x", 
                 x=(bracket['x_coords'][0] + bracket['x_coords'][2]) / 2,
                 y=bracket['y_coords'][1]+0.03,
                 showarrow=False),
                 font=dict(size=30, color="black",family="Times new Roman"),
-                row=3, col=2)
+                row=2, col=3)
 
 
 fig.update_yaxes(title_text="average AE",range=(2.65,3.95),row=1, col=1)
 fig.update_yaxes(range=(1.6,3.4),row=1, col=2)
+fig.update_yaxes(range=(1.1,2.9),row=1, col=3)
 fig.update_yaxes(title_text="average AE",range=(1.1,2.9),row=2, col=1)
-fig.update_yaxes(range=(1.1,2.9),row=2, col=2)
-fig.update_yaxes(title_text="average AE",range=(0.2,1.5),row=3, col=1)
-fig.update_yaxes(range=(0.03,0.47),row=3, col=2)
+fig.update_yaxes(range=(0.2,1.5),row=2, col=2)
+fig.update_yaxes(range=(0.03,0.47),row=2, col=3)
 
 
 fig.for_each_xaxis(lambda x: x.update(gridwidth=2,showgrid=True,showline=True, linewidth=2, linecolor='black', mirror=True))
@@ -161,9 +161,9 @@ fig.for_each_yaxis(lambda x: x.update(gridwidth=2,showgrid=True,showline=True, l
 
 fon_sz=30;
 fig.update_layout(
-        legend=dict(orientation="h",yanchor="bottom",y=1.02,xanchor="center",x=0.5,font=dict(color="blue",size=40)),
+        legend=dict(orientation="h",yanchor="bottom",y=1.05,xanchor="center",x=0.5,font=dict(color="blue",size=40)),
         template="plotly_white",
-        font_family="Times new Roman",font_color="black",font_size=fon_sz,height=1500,width=1500)
+        font_family="Times new Roman",font_color="black",font_size=fon_sz,height=800,width=1500)
 fig.update_annotations(font=dict(family="Times new Roman", size=30))
 
 
