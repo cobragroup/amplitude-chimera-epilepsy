@@ -41,6 +41,7 @@ dependencies:
   - gstreamer=1.14.1=h5eee18b_1
   - icu=58.2=he6710b0_3
   - idna=3.4=py311h06a4308_0
+  - multiprocess=0.70.16=py312h98912ed_0
   - intel-openmp=2023.1.0=hdb19cb5_46305
   - ipykernel=6.25.0=py311h92b7b1e_0
   - ipython=8.12.2=py311h06a4308_0
