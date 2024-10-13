@@ -2,13 +2,19 @@
 import pandas as pd
 import numpy as np
 
+import warnings
+warnings.filterwarnings("ignore")
+#to supress RuntimeWarning: Mean of empty slice
+#This is because, we are taking mean across all patients, and some patients don't have data for some time points
+#Thus, the mean of those time points across all patients will be NaN, which is not an error
+
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 #Global variables
 sampling_rate=512;
 bin_size=10;
-#Time-slice to show in 2-C
+#Time-slice (range of X axis, determinted by seizure lengths) to show in 2-C
 t1=2;t2=5;
 #Time-points to show in 2-A,B
 st=2.5;ut=4; #This should match the values generated in "unfiltered_data_gen.py"
