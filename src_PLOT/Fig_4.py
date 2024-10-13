@@ -25,10 +25,11 @@ def mappi(fig,df,band_name,color_rgba):
     name=band_name,
     marker_color=color_rgba,
     boxpoints="all",
-    marker=dict(size=5,color="black",opacity=0.5),
+    marker=dict(size=7,color="black",opacity=0.5),
     pointpos=0,
     boxmean=True,
     orientation="v"
+    jitter=0.1,  # add some jitter on points for better visibility
     ))
     return fig
 
@@ -61,21 +62,17 @@ fig.update_layout(boxmode='group',width=2500,height=1400,
     )
 )
 
-# changing the orientation to horizontal
-fig.update_traces(orientation='v')
+## Adding X and Y axis lines
 fig.add_shape(dict(type="line", xref="paper", yref="paper",
-                   x0=0, x1=0, y0=0, y1=1,  # Add a comma here
-                   line=dict(color='rgba(0,0,0,1)', width=1)))
+                   x0=0.001, x1=0.001, y0=0, y1=1,line=dict(color='rgba(0,0,0,1)', width=1)))
 fig.add_shape(dict(type="line", xref="paper", yref="paper",
-                   x0=0, x1=16, y0=0, y1=0,  # Add a comma here
-                   line=dict(color='rgba(0,0,0,1)', width=1)))
-fon_sz=20;
+                   x0=0, x1=16, y0=0, y1=0,line=dict(color='rgba(0,0,0,1)', width=1)))
+
 #Update layout for better visualization
 fig.update_layout(
-        legend=dict(orientation="h",yanchor="top",y=1.05,xanchor="center",x=0.5,font=dict(color="blue",size=40)),
-        
+        legend=dict(orientation="h",yanchor="top",y=0.99,xanchor="center",x=0.5,font=dict(color="blue",size=60)),
         template="plotly_white",
-        font_family="Times new Roman",font_color="black",font_size=fon_sz)
+        font_family="Times new Roman",font_color="black",font_size=20)
 
 fig.show()
 #fig.write_image("../images/Fig4.png")
