@@ -6,7 +6,7 @@ import os
 import glob
 
 ## Mention the Data Path here for the RAW iEEG data 
-data_path="../../Documents/"
+data_path="/home/sapta/Documents/"
 sampling_rate=512
 
 
@@ -63,7 +63,7 @@ fig.add_trace(go.Scatter(
 
 
 fig.for_each_xaxis(lambda x: x.update(gridwidth=2,showgrid=True,showline=True, linewidth=2, linecolor='black', mirror=True))
-fig.for_each_yaxis(lambda x: x.update(title_text="Analytic Amplitude (normalized)",zeroline=True,zerolinecolor="rgba(0,0,0,0.4)",gridwidth=2,showgrid=True,showline=True, linewidth=2, linecolor='black', mirror=True))
+fig.for_each_yaxis(lambda x: x.update(title_text="AA (normalized)",zeroline=True,zerolinecolor="rgba(0,0,0,0.4)",gridwidth=2,showgrid=True,showline=True, linewidth=2, linecolor='black', mirror=True))
 
 fig.update_xaxes(title_text="Time (in Mins)",tickfont=dict(size=30),row=4,col=1)
 
@@ -75,7 +75,7 @@ fig.update_layout(
 fig.update_annotations(font=dict(family="Times new Roman", size=30))
  
 fig.show()       
-#fig.write_image("../images/figSM12.png")
+#fig.write_image("../images/figSM11.png")
 
 
 ## Plot This for RAW amplitude Before Hilbert Transformation
@@ -130,4 +130,4 @@ fig.show()
 # fig.update_annotations(font=dict(family="Times new Roman", size=30))
  
 # fig.show()       
-# # #fig.write_image("../images/figSM12.png")
+# # #fig.write_image("../images/figSM11.png")
