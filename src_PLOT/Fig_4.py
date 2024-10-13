@@ -2,6 +2,13 @@
 import pandas as pd
 import numpy as np
 
+import warnings
+warnings.filterwarnings("ignore")
+#to supress RuntimeWarning: Mean of empty slice
+#This is because, we are taking mean across all patients, and some patients don't have data for some time points
+#Thus, the mean of those time points across all patients will be NaN, which is not an error
+
+
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
@@ -21,7 +28,7 @@ def mappi(fig,df,band_name,color_rgba):
     marker=dict(size=5,color="black",opacity=0.5),
     pointpos=0,
     boxmean=True,
-    orientation="h"
+    orientation="v"
     ))
     return fig
 
@@ -34,15 +41,15 @@ mappi(fig,data.query('band == "beta"'),"β", "rgb(0, 206, 209)")
 mappi(fig,data.query('band == "lgamma"'),"Lγ", "rgb(105, 89, 205)")
 mappi(fig,data.query('band == "hgamma"'),"Hγ", "rgb(238, 122, 233)")
 
-fig.update_layout(boxmode='group',width=1400,height=2000,
-    yaxis=dict(
+fig.update_layout(boxmode='group',width=2500,height=1400,
+    xaxis=dict(
         showgrid=False,
-        autorange="reversed",
+        # autorange="reversed",
         showticklabels=True,
         gridcolor="rgb(235,235,235)",
         tickfont=dict(size=40)
     ),
-    xaxis=dict(
+    yaxis=dict(
         zeroline=True,
         zerolinecolor="black",
         title=dict(
@@ -55,12 +62,15 @@ fig.update_layout(boxmode='group',width=1400,height=2000,
 )
 
 # changing the orientation to horizontal
-fig.update_traces(orientation='h')
-fig.add_shape(dict(type="rect", xref="paper", yref="paper",
-                    x0=0, x1=1, y0=0, y1=1,  # Add a comma here
-                    line=dict(color='rgba(0,0,0,1)', width=1)))
+fig.update_traces(orientation='v')
+fig.add_shape(dict(type="line", xref="paper", yref="paper",
+                   x0=0, x1=0, y0=0, y1=1,  # Add a comma here
+                   line=dict(color='rgba(0,0,0,1)', width=1)))
+fig.add_shape(dict(type="line", xref="paper", yref="paper",
+                   x0=0, x1=16, y0=0, y1=0,  # Add a comma here
+                   line=dict(color='rgba(0,0,0,1)', width=1)))
 fon_sz=20;
- #Update layout for better visualization
+#Update layout for better visualization
 fig.update_layout(
         legend=dict(orientation="h",yanchor="top",y=1.05,xanchor="center",x=0.5,font=dict(color="blue",size=40)),
         
