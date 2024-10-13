@@ -125,6 +125,7 @@ def meanning(i,band):
 # Create an empty DataFrame 
 df = pd.DataFrame(columns=['file_ID','pat_id','sez_id','band','sez_length','no_of_elec','pre_mean','pre_sd',    'sez_mean','sez_sd','post_mean','post_sd'])
 
+#Not worth time-wise to parallelize this
 for i in data.index:
     for band in ['delta', 'theta', 'alpha', 'beta','lgamma', 'hgamma']:
         all=meanning(i,band)
