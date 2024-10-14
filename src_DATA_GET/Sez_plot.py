@@ -4,6 +4,7 @@ import scipy.io
 import matplotlib.pyplot as plt
 import sys
 import os
+import glob
 
 # Get frequency and amplitude from command line arguments
 if len(sys.argv) < 3:
