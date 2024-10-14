@@ -1,133 +1,94 @@
 
+import pandas as pd
 import numpy as np
-import scipy.io
-
-import os
-import glob
-
-## Mention the Data Path here for the RAW iEEG data 
-data_path="../../Documents/"
-sampling_rate=512
-
 
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from scipy.signal import hilbert
 
-# scaling between 0 and 1
-scales= lambda signal: np.true_divide(( signal - np.amin(signal) ), (np.amax(signal)-np.amin(signal))) 
+#Creating folder for the SM9 figures
+import os
+if not os.path.exists('../images/figSM12'):
+   os.makedirs('../images/figSM12')
+   
+   
+   
+data=pd.read_json("../data/all_mean_Swiss-Short.json",orient="records")
+# Columns: file_ID	pat_id	sez_id	band	sez_length	no_of_elec	pre_mean	pre_sd	sez_mean	sez_sd	post_mean	post_sd
 
-# Mention patient ID and seizure ID here
-patid=2;sez_ID=3;
-
-filename = os.path.join(data_path, "ID"+str(patid)+"/Sz"+str(sez_ID)+".mat")
-mat=scipy.io.loadmat(filename)
-data=np.array(mat.get('EEG'))
-
-no_of_electrodes=np.shape(data)[1]
-tme=np.arange(1,np.shape(data)[0]) / (sampling_rate*60) # time_window in Mins
-
-
-fig=make_subplots(rows=4,cols=1,shared_xaxes=True,vertical_spacing=0.02,subplot_titles=("Channel 1","Channel 13","Channel 27", "Channel 39"))
+#Custom function to calculate std hading empty arrays
+custom_nanstd = lambda data: np.nanstd(data, ddof=1) if np.count_nonzero(~np.isnan(data)) > 1 else(
+    np.unique(data * (~np.isnan(data)))[0] if np.count_nonzero(~np.isnan(data)) == 1 else np.nan
+)
 
 
-ms=10;dc=1.5;
-
-clr="rgb(0,100,0,0.5)";
-wid=2;
-
-fig.add_trace(go.Scatter(
-    x=tme, y=scales(np.abs(hilbert(data[1:, 0]))),
-    mode='lines',
-    line=dict(width=wid,color=clr),
-    ),row=1,col=1)
-
-fig.add_trace(go.Scatter(
-    x=tme, y=scales(np.abs(hilbert(data[1:, 12]))),
-    mode='lines',
-    line=dict(width=wid,color=clr),
-    ),row=2,col=1)
+pat_grouped_data = data.groupby(['band','pat_id']).agg(
+    pre_mean=('pre_mean', 'mean'),
+    pre_sd=('pre_sd', lambda x: custom_nanstd(x)),
+    sez_mean=('sez_mean', 'mean'),
+    sez_sd=('sez_sd', lambda x: custom_nanstd(x)),
+    post_mean=('post_mean', 'mean'),
+    post_sd=('post_sd', lambda x: custom_nanstd(x)),
+    sezs=('file_ID', 'unique'),
+    sez_length=('sez_length', 'mean'),
+    no_of_elec=('no_of_elec','unique'),
+    no_of_sez=('sez_id', 'count')
+    )
+pat_grouped_data = pat_grouped_data.reset_index()  
 
 
-fig.add_trace(go.Scatter(
-    x=tme, y=scales(np.abs(hilbert(data[1:, 26]))),
-    mode='lines',
-    line=dict(width=wid,color=clr),
-    ),row=3,col=1)
-
-fig.add_trace(go.Scatter(
-    x=tme, y=scales(np.abs(hilbert(data[1:, 38]))),
-    mode='lines',
-    line=dict(width=wid,color=clr),
-    ),row=4,col=1)
+bandds=pd.DataFrame({'name':['delta','theta','alpha','beta','lgamma','hgamma'], 
+             'sym':["δ","θ","α","β","Lγ","Hγ"],
+             'color':["rgba(139,0,0,0.5)","rgba(255,69,0,0.5)","rgba(0,205,0,0.5)","rgba(0,206,209,0.5)","rgba(105,89,205,0.5)","rgba(238,122,233,0.5)"]})
 
 
-fig.for_each_xaxis(lambda x: x.update(gridwidth=2,showgrid=True,showline=True, linewidth=2, linecolor='black', mirror=True))
-fig.for_each_yaxis(lambda x: x.update(title_text="Analytic Amplitude (normalized)",zeroline=True,zerolinecolor="rgba(0,0,0,0.4)",gridwidth=2,showgrid=True,showline=True, linewidth=2, linecolor='black', mirror=True))
+# Suplimentary Figure 7
+# Plotting the average AE for each band for each patient
 
-fig.update_xaxes(title_text="Time (in Mins)",tickfont=dict(size=30),row=4,col=1)
+for pid in range(1,17):        
+        x_coords = [0, 1, 2]
+        s=pat_grouped_data.query('pat_id=='+str(pid))[['band','pre_mean','sez_mean','post_mean']]
+        fig = make_subplots(rows=3, cols=2,vertical_spacing=0.1,horizontal_spacing=0.2,shared_xaxes=True,subplot_titles=(
+                                "Delta (δ) Band",
+                                "Theta (θ) Band",
+                                "Alpha (α) Band",
+                                "Beta (β) Band",
+                                "Lgamma (Lγ) Band",
+                                "Hgamma (Hγ) Band"))
+        
+        bad=["delta","theta","alpha","beta","lgamma","hgamma"]
+        bd_idx=0
 
-fon_sz=30;
-fig.update_layout(
-    title_text="Local peak at onset in different Channels (Patient 2,Seizure 3)",showlegend=False,
-    template="plotly_white",
-    font_family="Times new Roman",font_color="black",font_size=fon_sz,height=2200,width=1500)
-fig.update_annotations(font=dict(family="Times new Roman", size=30))
- 
-fig.show()       
-#fig.write_image("../images/figSM12.png")
+        for ridx in range(1,4):
+                for cidx in range(1,3):
+                        bd=bad[bd_idx]
+                        means=s.query('band=="'+bd+'"')[['pre_mean','sez_mean','post_mean']].iloc[0].values
+                        fig.add_trace(go.Scatter(x=x_coords,y=means,mode='lines+markers',
+                                        #error_y=dict(type='data', array=sems,color='rgba(0,0,0,0.5)', thickness=1.5, width=10),
+                                        name=bandds[bandds.name==bd].sym.values[0],
+                                        marker=dict(color=bandds[bandds.name==bd].color.values[0],size=40),
+                                        line=dict(color=bandds[bandds.name==bd].color.values[0],width=3)
+                                        ),row=ridx, col=cidx)
+                        fig.update_xaxes(tickvals=x_coords,ticktext=["pre", "seizure", "post"],row=ridx, col=cidx)
+                        bd_idx+=1
+
+        fig.update_yaxes(title_text="average AE",row=1, col=1)
+        fig.update_yaxes(title_text="average AE",row=2, col=1)
+        fig.update_yaxes(title_text="average AE",row=3, col=1)
+
+        fig.for_each_xaxis(lambda x: x.update(gridwidth=2,showgrid=True,showline=True, linewidth=2, linecolor='black', mirror=True))
+        fig.for_each_yaxis(lambda x: x.update(gridwidth=2,showgrid=True,showline=True, linewidth=2, linecolor='black', mirror=True))
 
 
-## Plot This for RAW amplitude Before Hilbert Transformation
+        fon_sz=60;
+        fig.update_layout(
+            title_text="Patient ID: "+str(pid),
+            legend=dict(orientation="h",yanchor="bottom",y=1.02,xanchor="center",x=0.5,font=dict(color="blue",size=50)),template="plotly_white",
+            font_family="Times new Roman",font_color="black",font_size=fon_sz,height=1500,width=1500)
+        
+        fig.update_annotations(font=dict(family="Times new Roman", size=40))
 
-# fig=make_subplots(rows=4,cols=1,shared_xaxes=True,vertical_spacing=0.02,subplot_titles=("Channel 1","Channel 13","Channel 27", "Channel 39"))
-
-
-# ms=10;dc=1.5;
-
-# clr="rgb(0,100,0,0.5)";
-# wid=2;
-
-# fig.add_trace(go.Scatter(
-#     x=tme, y=data[1:, 0],
-#     mode='lines',
-#     line=dict(width=wid,color=clr),
-#     ),row=1,col=1)
-
-# fig.add_trace(go.Scatter(
-#     x=tme, y=data[1:, 12],
-#     mode='lines',
-#     line=dict(width=wid,color=clr),
-#     ),row=2,col=1)
-
-
-# fig.add_trace(go.Scatter(
-#     x=tme, y=data[1:, 26],
-#     mode='lines',
-#     line=dict(width=wid,color=clr),
-#     ),row=3,col=1)
-
-# fig.add_trace(go.Scatter(
-#     x=tme, y=data[1:, 38],
-#     mode='lines',
-#     line=dict(width=wid,color=clr),
-#     ),row=4,col=1)
+        #fig.show()    
+        fig.write_image("../images/figSM12/FigSM12_ID"+str(pid)+".png")   
 
 
 
-
-
-# fig.for_each_xaxis(lambda x: x.update(gridwidth=2,showgrid=True,showline=True, linewidth=2, linecolor='black', mirror=True))
-# fig.for_each_yaxis(lambda x: x.update(title_text="Amplitude (im mV)",zeroline=True,zerolinecolor="rgba(0,0,0,0.4)",gridwidth=2,showgrid=True,showline=True, linewidth=2, linecolor='black', mirror=True))
-
-# fig.update_xaxes(title_text="Time (in Mins)",tickfont=dict(size=30),row=4,col=1)
-
-# fon_sz=30;
-# fig.update_layout(
-#     title_text="Sezonset in different Channels (Patient 2,Seizure 3)",showlegend=False,
-#     template="plotly_white",
-#     font_family="Times new Roman",font_color="black",font_size=fon_sz,height=2200,width=1500)
-# fig.update_annotations(font=dict(family="Times new Roman", size=30))
- 
-# fig.show()       
-# # #fig.write_image("../images/figSM12.png")

@@ -36,27 +36,28 @@ except FileNotFoundError:
 except IOError:
     print(f"An error occurred while reading the file '{file_path}'.")
 
+print("Merge Xa and Xb folders. For Example: merge ID4a and ID4b as ID4.")
 
-# Just Printing the Metadata
-for patid in range(1,17):
-    mat_files = glob.glob(os.path.join(download_directory+"ID"+str(patid), '*.mat'))
-    no_of_seizures = len(mat_files)
-    #print("No of seizures: ", no_of_seizures)
-    Slength=[];no_of_electrodes=[];
 
-    for i in range(1,no_of_seizures+1):
-        filename = os.path.join(download_directory, "ID"+str(patid)+"/Sz"+str(i)+".mat")
-        mat=scipy.io.loadmat(filename)
-        data=np.array(mat.get('EEG'))
+# # Just Printing the Metadata
+# for patid in range(1,17):
+#     mat_files = glob.glob(os.path.join(download_directory+"ID"+str(patid), '*.mat'))
+#     no_of_seizures = len(mat_files)
+#     #print("No of seizures: ", no_of_seizures)
+#     Slength=[];no_of_electrodes=[];
 
-        #Sampling rate is 512Hz and each seizure preceded and succeeded by a 3 mins long segment
-        sez_length=(np.shape(data)[0]/sampling_rate) - (2*3*60) #in seconds
-        no_elec=np.shape(data)[1]
+#     for i in range(1,no_of_seizures+1):
+#         filename = os.path.join(download_directory, "ID"+str(patid)+"/Sz"+str(i)+".mat")
+#         mat=scipy.io.loadmat(filename)
+#         data=np.array(mat.get('EEG'))
+
+#         #Sampling rate is 512Hz and each seizure preceded and succeeded by a 3 mins long segment
+#         sez_length=(np.shape(data)[0]/sampling_rate) - (2*3*60) #in seconds
+#         no_elec=np.shape(data)[1]
         
-        Slength.append(sez_length) #in seconds
-        no_of_electrodes.append(no_elec)
+#         Slength.append(sez_length) #in seconds
+#         no_of_electrodes.append(no_elec)
         
         
-    print("PatID:",patid," Electrodes ",np.mean(no_of_electrodes),"/",np.std(no_of_electrodes)," Szs ",no_of_seizures," Max/Min ",np.max(Slength),"/",np.min(Slength))   
+#     print("PatID:",patid," Electrodes ",np.mean(no_of_electrodes),"/",np.std(no_of_electrodes)," Szs ",no_of_seizures," Max/Min ",np.max(Slength),"/",np.min(Slength))   
     
-

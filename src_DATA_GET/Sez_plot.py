@@ -4,6 +4,7 @@ import scipy.io
 import matplotlib.pyplot as plt
 import sys
 import os
+import glob
 
 # Get frequency and amplitude from command line arguments
 if len(sys.argv) < 3:
@@ -19,15 +20,40 @@ except ValueError:
 
 #Modify the Path here acording to the download location
 data_in_path="../../Documents/"
-
+sampling_rate=512
 #pat_id=2;sz_id=3;
+
+
+# Just Printing the Metadata
+
+mat_files = glob.glob(os.path.join(data_in_path+"ID"+str(pat_id), '*.mat'))
+no_of_seizures = len(mat_files)
+#print("No of seizures: ", no_of_seizures)
+Slength=[];no_of_electrodes=[];
+
+for i in range(1,no_of_seizures+1):
+    filename = os.path.join(data_in_path, "ID"+str(pat_id)+"/Sz"+str(i)+".mat")
+    mat=scipy.io.loadmat(filename)
+    data=np.array(mat.get('EEG'))
+
+    #Sampling rate is 512Hz and each seizure preceded and succeeded by a 3 mins long segment
+    sez_length=(np.shape(data)[0]/sampling_rate) - (2*3*60) #in seconds
+    no_elec=np.shape(data)[1]
+    
+    Slength.append(sez_length) #in seconds
+    no_of_electrodes.append(no_elec)
+    
+    
+print("PatID:",pat_id," Electrodes ",np.mean(no_of_electrodes),"/",np.std(no_of_electrodes)," Szs ",no_of_seizures," Max/Min ",np.max(Slength),"/",np.min(Slength))   
+    
+
 
 dname=os.path.join(data_in_path, "ID"+str(pat_id)+"/Sz"+str(sz_id)+".mat")
 mat=scipy.io.loadmat(dname)
 data=np.array(mat.get('EEG'))
 
 no_of_electrodes=np.shape(data)[1]
-sampling_rate=512
+
 
 tme=np.arange(1,np.shape(data)[0]) / (sampling_rate*60) # time_window in Mins
 

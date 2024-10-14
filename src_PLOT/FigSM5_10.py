@@ -12,8 +12,8 @@ sampling_rate=512
 
 #Creating folder for the SM9 figures
 import os
-if not os.path.exists('../images/figSM10_11'):
-   os.makedirs('../images/figSM10_11')
+if not os.path.exists('../images/figSM5_10'):
+   os.makedirs('../images/figSM5_10')
    
    
 # Mention the seizure ID here
@@ -46,6 +46,6 @@ for patid in range(1,17):
     ax.grid(True)  # Add a grid
 
     f.tight_layout()
-    f.savefig("../images/figSM10_11/FigSM10_ID"+str(patid)+".png")
+    f.savefig("../images/figSM5_10/FigSM_5_10_ID"+str(patid)+".png")
     plt.close(f)
     #plt.show()

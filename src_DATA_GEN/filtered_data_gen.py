@@ -6,14 +6,26 @@ from scipy.signal import butter, sosfilt, hilbert
 import os
 import glob
 import re
+import multiprocessing as mp
+
+import warnings
+warnings.filterwarnings("ignore")
+#to supress RuntimeWarning: Mean of empty slice
+#This is because, we are taking mean across all patients, and some patients don't have data for some time points
+#Thus, the mean of those time points across all patients will be NaN, which is not an error
 
 #Global variables
 sampling_rate=512;
 bin_size=10;
+total_patients=16;
+no_of_workers_in_pool=mp.cpu_count();
 
 #Modify the Path here acording to the download location
-data_in_path="../../Documents/"
+data_in_path="/home/sapta/Documents/"
 data_save_path="../data/"
+
+#print("Check for Folders ID1 to ID16 in data_in_path in case of error!!")
+
 
 ## FIltering, Hilbert Transformation and Amplitude Entropy Calculation
 def feq_filter(signal, fstart, fstop, fs):
@@ -51,37 +63,51 @@ def amp_en(alldata, start, stop, bin_size=bin_size):
     
     return en
 
-# Saving AE with time for all patients and seizures
-output_events={'fileID':[],'sez_len':[],'elec_no':[],'delta':[],'theta':[],'alpha':[],'beta':[],'lgamma':[],'hgamma':[]}
 
-for patid in range(1,17):
-    mat_files = glob.glob(os.path.join(data_in_path+"ID"+str(patid), '*.mat'))
-    no_of_seizures = len(mat_files)
+def filtered_data_AE_Worker(params):
+        # Saving AE with time for all patients and seizures
+        output_events={'fileID':[],'sez_len':[],'elec_no':[],'delta':[],'theta':[],'alpha':[],'beta':[],'lgamma':[],'hgamma':[]}
 
-    for i in range(1,no_of_seizures+1):
-        filename = os.path.join(data_in_path, "ID"+str(patid)+"/Sz"+str(i)+".mat")
+        patid, sz_id = params
+        filename = os.path.join(data_in_path, "ID"+str(patid)+"/Sz"+str(sz_id)+".mat")
         mat=scipy.io.loadmat(filename)
         data=np.array(mat.get('EEG'))
         
-        print("Processing patient ID"+str(patid)+" Seizure "+str(i))
+        print("Processing patient ID"+str(patid)+" Seizure "+str(sz_id))
 
         #Sampling rate is 512Hz and each seizure preceded and succeeded by a 3 mins long segment
         sez_length=(np.shape(data)[0]/sampling_rate) - (2*3*60) #in seconds
         no_elec=np.shape(data)[1]
         
-        output_events['fileID'].append("p"+str(patid)+"s"+str(i))#Recorded in seconds
+        output_events['fileID'].append("p"+str(patid)+"s"+str(sz_id))#Recorded in seconds
         output_events['sez_len'].append(sez_length)#Recorded in seconds
         output_events['elec_no'].append(no_elec)
-        output_events['delta'].append(amp_en(data, 0.5,4))
-        output_events['theta'].append(amp_en(data, 4,8))
-        output_events['alpha'].append(amp_en(data, 8,12))
-        output_events['beta'].append(amp_en(data, 12,35))
-        output_events['lgamma'].append(amp_en(data, 35,80))
-        output_events['hgamma'].append(amp_en(data, 80,150))    
+        output_events['delta'].append(amp_en(data, 0.5,4)) #Delta Band
+        output_events['theta'].append(amp_en(data, 4,8)) #Theta Band
+        output_events['alpha'].append(amp_en(data, 8,12)) #Alpha Band
+        output_events['beta'].append(amp_en(data, 12,35)) #Beta Band
+        output_events['lgamma'].append(amp_en(data, 35,80)) #Low Gamma Band
+        output_events['hgamma'].append(amp_en(data, 80,150)) #High Gamma Band   
+        
+        return pd.DataFrame.from_dict(output_events)  
 
+#Creating all possible combinations of patients and seizures
+all_comb=[(patid,i) for patid in range(1,total_patients+1) for i in range(1,len(glob.glob(os.path.join(data_in_path+"ID"+str(patid), '*.mat')))+1)]
 
-out=pd.DataFrame.from_dict(output_events)
-out.to_json(os.path.join(data_save_path,"all_data_Swiss-Short.json"), orient='records')
+# Running the worker function in parallel
+pool = mp.Pool(mp.cpu_count())
+all_res = [pool.apply_async(filtered_data_AE_Worker, (params,)) for params in all_comb]
+# Close the pool and wait for the work to finish
+pool.close()
+pool.join()
+#Taking the results from the workers and saving them
+data=pd.DataFrame()
+for dframes in all_res:
+        r=dframes.get()
+        if not r.empty:
+            data=pd.concat([data,r], ignore_index=True)
+        
+data.to_json(os.path.join(data_save_path,"all_data_Swiss-Short.json"), orient='records')
 
 
 # Mean patient AEs with time (which is averaged over seizures per patient)
@@ -107,6 +133,7 @@ def meanning(i,band):
 # Create an empty DataFrame 
 df = pd.DataFrame(columns=['file_ID','pat_id','sez_id','band','sez_length','no_of_elec','pre_mean','pre_sd',    'sez_mean','sez_sd','post_mean','post_sd'])
 
+#Not worth time-wise to parallelize this
 for i in data.index:
     for band in ['delta', 'theta', 'alpha', 'beta','lgamma', 'hgamma']:
         all=meanning(i,band)
