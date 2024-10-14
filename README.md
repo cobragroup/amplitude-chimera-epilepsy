@@ -38,7 +38,7 @@ Multiprocessing is used to parallelize the code execution.
 - `FigSM2-13.py`: Script to generate all figures of the supplementary materials. Usage: `python FigSMx.py`.
 
 ## Acknowledgments
-We acknowledge SWEC-ETHZ iEEG Database as primary source of input data for this work.
+We acknowledge SWEC-ETHZ iEEG Database as primary source of input data for this work. See the paper for further information on supporting funding agencies and academic institutes.
 
 ## Contact
 Please contact the corresponding author for any questions on the investigation.
