@@ -1,8 +1,10 @@
 # amplitude-chimera-epilepsy
+
 Codes for Saptarshi Ghosh et al. "Amplitude entropy captures chimera-like behavior in epileptic seizure dynamics" (Currently under review). Preprint avaliable in [bioRxiv](https://doi.org/10.1101/2024.05.26.595969).
 
 ## Overview
 This repository contains code and data required for reproducing the figures of the paper. The paper propose a novel method capturing the characteristic pronounced changes in the recorded EEG amplitude during seizures by estimating chimera-like states directly from the signals in a frequency-and time-resolved manner. The approach is tested on a publicly available intracranial EEG dataset of 16 patients with focal epilepsy. It is shown that the proposed measure, titled Amplitude Entropy, is sensitive to seizure onset dynamics, demonstrating its significant increases during seizure as compared to before and after seizure. This finding is robust across patients, their seizures, and different frequency bands.
+
 
 ## Installation
 The installation requires Python>=3.x and conda (or py-venv) package. Users can then install the requirements inside a conda environment using 
