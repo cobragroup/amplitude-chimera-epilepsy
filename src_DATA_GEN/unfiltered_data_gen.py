@@ -60,7 +60,7 @@ def unfiltered_data_AE_Worker(params):
         
         output_events['fileID'].append("p"+str(patid)+"s"+str(sz_id))#Recorded in seconds
         output_events['pat_id'].append("ID"+str(patid))
-        output_events['sez_id'].append(i)#Recorded in seconds
+        output_events['sez_id'].append(sz_id)#Recorded in seconds
         output_events['sez_len'].append(sez_length)#Recorded in seconds
         output_events['elec_no'].append(no_elec)
         output_events['AE'].append(amp_en(data))
