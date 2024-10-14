@@ -6,6 +6,12 @@ import os
 import glob
 import multiprocessing as mp
 
+import warnings
+warnings.filterwarnings("ignore")
+#to supress RuntimeWarning: Mean of empty slice
+#This is because, we are taking mean across all patients, and some patients don't have data for some time points
+#Thus, the mean of those time points across all patients will be NaN, which is not an error
+
 
 #Global variables
 sampling_rate=512;
@@ -21,6 +27,9 @@ st=2.5; ut=4;
 #Modify the Path here acording to the download location
 data_in_path="/home/sapta/Documents/"
 data_save_path="../data/"
+
+#print("Check for Folders ID1 to ID16 in data_in_path in case of error!!")
+
 
 ## Hilbert Transformation and Amplitude Entropy Calculation
 def amp_en(alldata, bin_size=bin_size):
