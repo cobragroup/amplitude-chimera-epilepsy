@@ -19,6 +19,9 @@ no_of_workers_in_pool=mp.cpu_count();
 data_in_path="/home/sapta/Documents/"
 data_save_path="../data/"
 
+#print("Check for Folders ID1 to ID16 in data_in_path in case of error!!")
+
+
 ## FIltering, Hilbert Transformation and Amplitude Entropy Calculation
 def feq_filter(signal, fstart, fstop, fs):
     # Create second-order sections (SOS) for the filter
