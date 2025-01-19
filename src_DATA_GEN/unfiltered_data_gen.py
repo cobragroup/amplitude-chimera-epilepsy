@@ -15,7 +15,7 @@ warnings.filterwarnings("ignore")
 
 #Global variables
 sampling_rate=512;
-bin_size=10;
+bin_size=50;
 total_patients=16;
 no_of_workers_in_pool=mp.cpu_count();
 # Time points for Fig 2-A,B (2.5 mins and 4 mins) 
@@ -26,7 +26,7 @@ st=2.5; ut=4;
 
 #Modify the Path here acording to the download location
 data_in_path="/home/sapta/Documents/"
-data_save_path="../data/"
+data_save_path="../../Code_5_sci_rep_review_1_test/data/"
 
 #print("Check for Folders ID1 to ID16 in data_in_path in case of error!!")
 
@@ -39,7 +39,7 @@ def amp_en(alldata, bin_size=bin_size):
     Aamplitude = np.empty((number_of_datapoints, number_of_channels))
     for i in range(number_of_channels):
         Aamplitude[:, i] = np.abs(scipy.signal.hilbert(alldata[:, i])) #Extracing Analytical Signal from input
-    
+        ##The amplitude envelope is given by the magnitude of the analytic signal.
     en = np.empty(number_of_datapoints)
     # Calculating Entropies across channels
     for t in range(number_of_datapoints):
@@ -94,7 +94,7 @@ for dframes in all_res:
         if not r.empty:
             out=pd.concat([out,r], ignore_index=True)
         
-out.to_json(os.path.join(data_save_path,"all_unfiltered_data_AE_Swiss-Short.json"), orient='records')
+out.to_json(os.path.join(data_save_path,"all_unfiltered_data_AE_Swiss-Short_bin50.json"), orient='records')
 
 # Mean patient AEs with time (which is averaged over seizures per patient)
 def nans(pid):
@@ -124,7 +124,7 @@ for i in range(1,17):
     output['std_AE'].append(b)
 
 df=pd.DataFrame.from_dict(output)
-df.to_json(os.path.join(data_save_path,"all_unfiltered_mean_AE_Swiss-Short.json"), orient='records')
+df.to_json(os.path.join(data_save_path,"all_unfiltered_mean_AE_Swiss-Short_bin50.json"), orient='records')
 
 
 # Saving PMF for all time-points across electrodes for Fig 2-A,B
@@ -206,4 +206,4 @@ def elecs(t1,t2):
 
 
 outp=pd.DataFrame.from_dict(elecs(st,ut))
-outp.to_json(os.path.join(data_save_path,"all_unfiltered_electrode_data_Swiss-Short_"+str(st)+"_"+str(ut)+".json"), orient='records')
+outp.to_json(os.path.join(data_save_path,"all_unfiltered_electrode_data_Swiss-Short_"+str(st)+"_"+str(ut)+"_bin50.json"), orient='records')
