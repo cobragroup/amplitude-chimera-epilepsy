@@ -78,7 +78,7 @@ def unfiltered_data_AE_Worker(params):
 
 
         #upscaled Normalized time for each seizure segment
-        #largest seizure is 1002 secs so making all seziure segments as 1005 secs with interpolation
+        #largest seizure is 1005 secs so making all seziure segments as 1005 secs with interpolation
         normed_time = np.linspace(0, 1, (1005*sampling_rate), endpoint=True)       
         #no_of_rows= electrode numbers #no_of_columns=180 sec of pre and post and 1005 sec of seizure segment
         new_data=np.zeros(((1005*sampling_rate)+(2*(3*60*sampling_rate)),no_elec));
@@ -166,7 +166,7 @@ def elecs(t1,t2):
             ####Using Normed Time####
 
             #upscaled Normalized time for each seizure segment
-            #largest seizure is 1002 secs so making all seziure segments as 1005 secs with interpolation
+            #largest seizure is 1005 secs so making all seziure segments as 1005 secs with interpolation
             normed_time = np.linspace(0, 1, (1005*sampling_rate), endpoint=True)       
             #no_of_rows= electrode numbers #no_of_columns=180 sec of pre and post and 1005 sec of seizure segment
             alldata=np.zeros(((1005*sampling_rate)+(2*(3*60*sampling_rate)),no_elec));
@@ -215,7 +215,7 @@ def elecs(t1,t2):
             ####Using Normed Time####
             
             #upscaled Normalized time for each seizure segment
-            #largest seizure is 1002 secs so making all seziure segments as 1005 secs with interpolation
+            #largest seizure is 1005 secs so making all seziure segments as 1005 secs with interpolation
             normed_time = np.linspace(0, 1, (1005*sampling_rate), endpoint=True)       
             #no_of_rows= electrode numbers #no_of_columns=180 sec of pre and post and 1005 sec of seizure segment
             alldata=np.zeros(((1005*sampling_rate)+(2*(3*60*sampling_rate)),no_elec));
