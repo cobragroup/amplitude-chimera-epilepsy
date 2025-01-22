@@ -112,7 +112,7 @@ fig.add_trace(go.Scatter(x=time,y=mean_AE-std_AE,
                          fillcolor='rgba(75,   0, 130, 0.3)',fill='tonexty',showlegend=False),row=2,col=1)
 # Enhancing the plot
 fig.update_yaxes(title_text="Channels per bin (in %)",range=(0,18),row=1,col=1)
-fig.update_xaxes(title_text="Bin Index",range=(0,600),row=1,col=1) #Change here for X axis of 2-A,B
+fig.update_xaxes(title_text="Bin Index",range=(0,400),row=1,col=1) #Change here for X axis of 2-A,B
 fig.update_xaxes(title_text="Bin Index",row=1,col=2)
 
 fig.update_yaxes(title_text="average AE",range=(2.6,5),row=2,col=1) #Change here for Y axis of 2-C
@@ -165,6 +165,6 @@ fig.for_each_yaxis(lambda y: y.update(
 
 
 fig.show()
-#fig.write_image("../images/Fig2.png")
+fig.write_image("../images/Fig2_400.png")
 # fig.write_html("../images/Fig2.html")
 
