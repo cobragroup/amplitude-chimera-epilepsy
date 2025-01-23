@@ -17,8 +17,11 @@ t1=2;t2=5;
 #Time-points to show in SM6
 st=2.5;ut=4; #This should match the values generated in "unfiltered_data_gen.py"
         
+        
+data_load_path="../../Code_4/data/"
+
 ##SUP Figure - 6
-df=pd.read_json("../data/all_unfiltered_mean_AE_Swiss-Short.json",orient="records")
+df=pd.read_json(data_load_path+"all_unfiltered_mean_AE_Swiss-Short.json",orient="records")
 #Columns: pat_ID - elec_no - mean_AE - std_AE
 
 # The plot
@@ -79,7 +82,7 @@ fig.write_image("../images/FigSM4a.png")
 #Plotting the same figure ignoring the largest seizure of ID14 
 #Taking only a seizure slice of 4 min or 240 seconds, which is the largest seizure length and averaging over them
 largest_seizure_length=240
-out=pd.read_json("../data/all_unfiltered_data_AE_Swiss-Short.json",orient="records")
+out=pd.read_json(data_load_path+"all_unfiltered_data_AE_Swiss-Short.json",orient="records")
 # Mean patient AEs with time (which is averaged over seizures per patient)
 def nans(pid,considered_window_after_seizure):
     ss=[]
