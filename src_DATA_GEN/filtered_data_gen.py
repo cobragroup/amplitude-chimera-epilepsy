@@ -16,10 +16,9 @@ warnings.filterwarnings("ignore")
 
 #Global variables
 sampling_rate=512;
-bin_size=50;
+bin_size=10;
 total_patients=16;
-no_of_workers_in_pool=26;
-#mp.cpu_count();
+no_of_workers_in_pool=mp.cpu_count();
 
 #Modify the Path here acording to the download location
 data_in_path="/home/sapta/Documents/"
@@ -108,7 +107,7 @@ for dframes in all_res:
         if not r.empty:
             data=pd.concat([data,r], ignore_index=True)
         
-data.to_json(os.path.join(data_save_path,"all_data_Swiss-Short_bin50.json"), orient='records')
+data.to_json(os.path.join(data_save_path,"all_data_Swiss-Short_bin"+str(bin_size)+".json"), orient='records')
 
 
 # Mean patient AEs with time (which is averaged over seizures per patient)
@@ -154,4 +153,4 @@ for i in data.index:
         }
         df = pd.concat([df, pd.DataFrame([row])], ignore_index=True)
         
-df.to_json(os.path.join(data_save_path,"all_mean_Swiss-Short_bin50.json"), orient='records')
+df.to_json(os.path.join(data_save_path,"all_mean_Swiss-Short_bin"+str(bin_size)+".json"), orient='records')

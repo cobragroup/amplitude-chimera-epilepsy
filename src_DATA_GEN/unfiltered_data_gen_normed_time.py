@@ -83,6 +83,7 @@ def unfiltered_data_AE_Worker(params):
         #no_of_rows= electrode numbers #no_of_columns=180 sec of pre and post and 1005 sec of seizure segment
         new_data=np.zeros(((1005*sampling_rate)+(2*(3*60*sampling_rate)),no_elec));
 
+        #Interpolating in Time to make all seizure segments same length
         for ch in range(no_elec):
             tmp=data[:,ch]
             no_datapoints = len(tmp)
@@ -119,7 +120,7 @@ for dframes in all_res:
         if not r.empty:
             out=pd.concat([out,r], ignore_index=True)
         
-out.to_json(os.path.join(data_save_path,"all_unfiltered_data_AE_Swiss-Short_normed_time_b10.json"), orient='records')
+out.to_json(os.path.join(data_save_path,"all_unfiltered_data_AE_Swiss-Short_normed_time_"+str(bin_size)+".json"), orient='records')
 
 # Mean patient AEs with time (which is averaged over seizures per patient)
 def nans(pid):
@@ -139,7 +140,7 @@ for i in range(1,17):
     output['std_AE'].append(b)
 
 df=pd.DataFrame.from_dict(output)
-df.to_json(os.path.join(data_save_path,"all_unfiltered_mean_AE_Swiss-Short_normed_time_b10.json"), orient='records')
+df.to_json(os.path.join(data_save_path,"all_unfiltered_mean_AE_Swiss-Short_normed_time_"+str(bin_size)+".json"), orient='records')
 
 
 # Saving PMF for all time-points across electrodes for Fig 2-A,B
@@ -171,6 +172,7 @@ def elecs(t1,t2):
             #no_of_rows= electrode numbers #no_of_columns=180 sec of pre and post and 1005 sec of seizure segment
             alldata=np.zeros(((1005*sampling_rate)+(2*(3*60*sampling_rate)),no_elec));
 
+            #Interpolating in Time to make all seizure segments same length
             for ch in range(no_elec):
                 tmp=data[:,ch]
                 no_datapoints = len(tmp)
@@ -190,8 +192,8 @@ def elecs(t1,t2):
             for j in range(number_of_channels):
                 Aamplitude[:, j] = np.abs(scipy.signal.hilbert(alldata[:, j]))
             
-            pm1,x1=pmf_calc(Aamplitude[t1_index,:],np.min(Aamplitude[t1_index,:]),np.max(Aamplitude[t1_index,:]))
-            pm2,x2=pmf_calc(Aamplitude[t2_index,:],np.min(Aamplitude[t2_index,:]),np.max(Aamplitude[t2_index,:]))
+            _,x1=pmf_calc(Aamplitude[t1_index,:],np.min(Aamplitude[t1_index,:]),np.max(Aamplitude[t1_index,:]))
+            _,x2=pmf_calc(Aamplitude[t2_index,:],np.min(Aamplitude[t2_index,:]),np.max(Aamplitude[t2_index,:]))
             xt1.append(x1);xt2.append(x2);
             
     ot1=np.concatenate(xt1);ot2=np.concatenate(xt2);        
@@ -220,6 +222,7 @@ def elecs(t1,t2):
             #no_of_rows= electrode numbers #no_of_columns=180 sec of pre and post and 1005 sec of seizure segment
             alldata=np.zeros(((1005*sampling_rate)+(2*(3*60*sampling_rate)),no_elec));
 
+            #Interpolating in Time to make all seizure segments same length
             for ch in range(no_elec):
                 tmp=data[:,ch]
                 no_datapoints = len(tmp)
@@ -264,4 +267,4 @@ def elecs(t1,t2):
 
 
 outp=pd.DataFrame.from_dict(elecs(st,ut))
-outp.to_json(os.path.join(data_save_path,"all_unfiltered_electrode_data_Swiss-Short_"+str(st)+"_"+str(ut)+"_normed_time_b10.json"), orient='records')
+outp.to_json(os.path.join(data_save_path,"all_unfiltered_electrode_data_Swiss-Short_"+str(st)+"_"+str(ut)+"_normed_time_"+str(bin_size)+".json"), orient='records')
