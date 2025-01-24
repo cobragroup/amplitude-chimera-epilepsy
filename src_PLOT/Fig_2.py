@@ -180,6 +180,6 @@ fig.for_each_yaxis(lambda y: y.update(
 
 
 fig.show()
-# fig.write_image("../images/Fig2.png")
+fig.write_image("../images/Fig2.svg")
 # fig.write_html("../images/Fig2.html")
 
