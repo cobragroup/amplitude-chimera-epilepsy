@@ -89,6 +89,6 @@ fig.for_each_xaxis(lambda x: x.update(showgrid=True))
 fig.for_each_yaxis(lambda x: x.update(showgrid=True))
 
 #fig.show()
-fig.write_image("../images/FigSM4a_time_normed.png")
+#fig.write_image("../images/FigSM4a_time_normed.png")
 # fig.write_html("../images/FigSM4.html")
 
