@@ -183,6 +183,6 @@ fig.update_layout(
 fig.update_annotations(font_size=30)
 
 fig.show()
-#fig.write_image("../images/Fig2.png")
+fig.write_image("../images/Fig2_normed_histogram.png")
 # fig.write_html("../images/Fig2.html")
 
