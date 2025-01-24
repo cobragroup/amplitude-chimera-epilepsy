@@ -15,7 +15,7 @@ warnings.filterwarnings("ignore")
 
 #Global variables
 sampling_rate=512;
-bin_size=50;
+bin_size=10;
 total_patients=16;
 no_of_workers_in_pool=mp.cpu_count();
 # Time points for Fig 2-A,B (2.5 mins and 4 mins) 
