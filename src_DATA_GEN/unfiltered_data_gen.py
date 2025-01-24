@@ -135,10 +135,12 @@ def pmf_calc(chans,mins,maxs):
     pmf = hist / np.sum(hist)
     return np.array(pmf),np.array(bin_edges)
 
+
 def elecs(t1,t2):
     t1_index=int(np.ceil(t1*60*sampling_rate)) #Changing from Mins to indices with the sampling rate
     t2_index=int(np.ceil(t2*60*sampling_rate))
 
+    ## Finding the max and min values of X_t1 and X_t2 (max/min channel amplitudes) across all patients and seizures for T1 and T2 time-points
     xt1=[];xt2=[];
     for patid in range(1,17):
         mat_files = glob.glob(os.path.join(data_in_path+"ID"+str(patid), '*.mat'))
@@ -151,17 +153,20 @@ def elecs(t1,t2):
 
             number_of_datapoints, number_of_channels = alldata.shape    
             Aamplitude = np.empty((number_of_datapoints, number_of_channels))
+
             for j in range(number_of_channels):
                 Aamplitude[:, j] = np.abs(scipy.signal.hilbert(alldata[:, j]))
             
-            pm1,x1=pmf_calc(Aamplitude[t1_index,:],np.min(Aamplitude[t1_index,:]),np.max(Aamplitude[t1_index,:]))
-            pm2,x2=pmf_calc(Aamplitude[t2_index,:],np.min(Aamplitude[t2_index,:]),np.max(Aamplitude[t2_index,:]))
+            _,x1=pmf_calc(Aamplitude[t1_index,:],np.min(Aamplitude[t1_index,:]),np.max(Aamplitude[t1_index,:]))
+            _,x2=pmf_calc(Aamplitude[t2_index,:],np.min(Aamplitude[t2_index,:]),np.max(Aamplitude[t2_index,:]))
             xt1.append(x1);xt2.append(x2);
             
-    ot1=np.concatenate(xt1);ot2=np.concatenate(xt2);        
+    ot1=np.concatenate(xt1);ot2=np.concatenate(xt2); 
+
+    # Max/Min bin_edge for Channel amplitudes across all patients and seizures for T1 and T2 time-points       
     max_xt1=np.ceil(np.max(ot1)).astype(int);min_xt1=np.floor(np.min(ot1)).astype(int);
     max_xt2=np.ceil(np.max(ot2)).astype(int);min_xt2=np.floor(np.min(ot2)).astype(int);
-    print(max_xt1,min_xt1,max_xt2,min_xt2)
+    #print(max_xt1,min_xt1,max_xt2,min_xt2)
     
     
     outs={'fileID':[],'pat_id':[],'sez_id':[],'sez_len':[],'elec_no':[],'X_t1':[],'X_t2':[],'ampen_t1':[],'ampen_t2':[],'elecs_t1':[],'elecs_t2':[]}
