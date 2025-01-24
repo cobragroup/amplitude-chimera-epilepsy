@@ -15,7 +15,7 @@ warnings.filterwarnings("ignore")
 
 #Global variables
 sampling_rate=512;
-bin_size=50;
+bin_size=10;
 total_patients=16;
 no_of_workers_in_pool=mp.cpu_count();
 # Time points for Fig 2-A,B (2.5 mins and 4 mins) 
@@ -94,9 +94,10 @@ for dframes in all_res:
         if not r.empty:
             out=pd.concat([out,r], ignore_index=True)
         
-out.to_json(os.path.join(data_save_path,"all_unfiltered_data_AE_Swiss-Short_bin50.json"), orient='records')
+out.to_json(os.path.join(data_save_path,"all_unfiltered_data_AE_Swiss-Short_bin"+str(bin_size)+".json"), orient='records')
 
 # Mean patient AEs with time (which is averaged over seizures per patient)
+## AE Series is padded with NaNs to make all the AE series for different seizures are of same length
 def nans(pid):
     ss=[]
     for s in out.query('pat_id=="ID'+str(pid)+'"')[['sez_len','AE']].iterrows():
@@ -124,7 +125,7 @@ for i in range(1,17):
     output['std_AE'].append(b)
 
 df=pd.DataFrame.from_dict(output)
-df.to_json(os.path.join(data_save_path,"all_unfiltered_mean_AE_Swiss-Short_bin50.json"), orient='records')
+df.to_json(os.path.join(data_save_path,"all_unfiltered_mean_AE_Swiss-Short_bin"+str(bin_size)+".json"), orient='records')
 
 
 # Saving PMF for all time-points across electrodes for Fig 2-A,B
@@ -206,4 +207,4 @@ def elecs(t1,t2):
 
 
 outp=pd.DataFrame.from_dict(elecs(st,ut))
-outp.to_json(os.path.join(data_save_path,"all_unfiltered_electrode_data_Swiss-Short_"+str(st)+"_"+str(ut)+"_bin50.json"), orient='records')
+outp.to_json(os.path.join(data_save_path,"all_unfiltered_electrode_data_Swiss-Short_"+str(st)+"_"+str(ut)+"_bin"+str(bin_size)+".json"), orient='records')
