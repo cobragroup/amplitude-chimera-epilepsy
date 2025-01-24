@@ -13,14 +13,16 @@ from plotly.subplots import make_subplots
 
 #Global variables
 sampling_rate=512;
-bin_size=1;
+bin_size=10;
 #Time-slice (range of X axis, determinted by seizure lengths) to show in 2-C
 t1=2;t2=5;
 #Time-points to show in 2-A,B
 st=2.5;ut=4; #This should match the values generated in "unfiltered_data_gen.py"
         
         
+#data_load_path="../../Code_4/data/"
 data_load_path="../../Code_5_sci_rep_review_1_test/data/"
+
 
 ##Main Figure - 2
 ##Needed Data Files: all_unfiltered_electrode_data_Swiss-Short_2.5_4.json,all_unfiltered_mean_AE_Swiss-Short.json
@@ -55,20 +57,29 @@ output={'pat_ID':[],'elec_no':[],'X_t1':[],'X_t2':[],'elecs_t1':[],'elecs_t2':[]
 for pid in range(1,17): # 16 patients
     s=outp.query('pat_id=="ID'+str(pid)+'"')[['ampen_t1','elecs_t1','X_t1','X_t2','ampen_t2','elecs_t2']];
     
-    #replacing 0s with np.nan
-    s['elecs_t1'] = s['elecs_t1'].apply(lambda x: [np.nan if val==0.0 else val for val in x])
-    #replacing 0s with np.nan
-    s['elecs_t2'] = s['elecs_t2'].apply(lambda x: [np.nan if val==0.0 else val for val in x])
+    ## replacing 0s with np.nan will lead to un-normed histograms where counts wont add up to 100%
+    #s['elecs_t1'] = s['elecs_t1'].apply(lambda x: [np.nan if val==0.0 else val for val in x])
+    #s['elecs_t2'] = s['elecs_t2'].apply(lambda x: [np.nan if val==0.0 else val for val in x])
     #Not bothering with X_t1,X_t2 and ampen_t1,ampen_t2 as they are same and don't have 0s
 
+    #output['pat_ID'].append("ID"+str(pid))
+    #output['elec_no'].append(outp.query('pat_id=="ID'+str(pid)+'"')['elec_no'].unique()[0])
+    
+    #output['X_t1'].append(np.nanmean(np.array(s['X_t1'].tolist()),axis=0))
+    #output['X_t2'].append(np.nanmean(np.array(s['X_t2'].tolist()),axis=0))
+  
+    #output['elecs_t1'].append(np.nanmean(np.array(s['elecs_t1'].tolist()),axis=0))
+    #output['elecs_t2'].append(np.nanmean(np.array(s['elecs_t2'].tolist()),axis=0))
+
+    ## Keeping the Zero counts of the histogram bins as it is. 
     output['pat_ID'].append("ID"+str(pid))
     output['elec_no'].append(outp.query('pat_id=="ID'+str(pid)+'"')['elec_no'].unique()[0])
     
-    output['X_t1'].append(np.nanmean(np.array(s['X_t1'].tolist()),axis=0))
-    output['X_t2'].append(np.nanmean(np.array(s['X_t2'].tolist()),axis=0))
+    output['X_t1'].append(np.mean(np.array(s['X_t1'].tolist()),axis=0))
+    output['X_t2'].append(np.mean(np.array(s['X_t2'].tolist()),axis=0))
   
-    output['elecs_t1'].append(np.nanmean(np.array(s['elecs_t1'].tolist()),axis=0))
-    output['elecs_t2'].append(np.nanmean(np.array(s['elecs_t2'].tolist()),axis=0))
+    output['elecs_t1'].append(np.mean(np.array(s['elecs_t1'].tolist()),axis=0))
+    output['elecs_t2'].append(np.mean(np.array(s['elecs_t2'].tolist()),axis=0))
     
     output['ampen_t1'].append(s['ampen_t1'].mean())
     output['ampen_t2'].append(s['ampen_t2'].mean())
@@ -76,11 +87,15 @@ for pid in range(1,17): # 16 patients
 outS=pd.DataFrame.from_dict(output)
 
 #Taking NaN mean acroos all patients
-y1m = np.nanmean(np.array(outS['elecs_t1'].tolist()),axis=0)
-x1m = np.nanmean(np.array(outS['X_t1'].tolist()),axis=0)
-y2m = np.nanmean(np.array(outS['elecs_t2'].tolist()),axis=0)
-x2m = np.nanmean(np.array(outS['X_t2'].tolist()),axis=0)
+y1m = np.mean(np.array(outS['elecs_t1'].tolist()),axis=0)
+x1m = np.mean(np.array(outS['X_t1'].tolist()),axis=0)
+y2m = np.mean(np.array(outS['elecs_t2'].tolist()),axis=0)
+x2m = np.mean(np.array(outS['X_t2'].tolist()),axis=0)
 
+# print("T1:",np.sum(y1m),"T2:",np.sum(y2m))
+# print("T1:",len(x1m),"T2:",len(x2m))
+# print(x1m,y1m*100)
+# print(x2m,y2m*100)
 
 ## Making Fig 2
 fig = make_subplots(
@@ -95,11 +110,9 @@ fig = make_subplots(
 # fig.add_trace(go.Bar(name='t2', x=np.arange(len(x2m))[:len(x1m)], y=y2m[:len(x1m)]*100,showlegend=False),row=1,col=2)
 
 #100 is multipled to show in percentage, original value in fraction 0-1 as it was a PMF
-fig.add_trace(go.Bar(name='t1', x=np.arange(len(x1m)), y=y1m*100,
-                     showlegend=False),row=1,col=1) 
-fig.add_trace(go.Bar(name='t2', x=np.arange(len(x2m)), y=y2m*100,
-                     showlegend=False),row=1,col=2)
-fig.update_traces(width=20,opacity=1,row=1)
+fig.add_trace(go.Bar(name='t1', x=np.arange(len(x1m)), y=y1m*100,showlegend=False),row=1,col=1) 
+fig.add_trace(go.Bar(name='t2', x=np.arange(len(x2m)), y=y2m*100,showlegend=False),row=1,col=2)
+fig.update_traces(width=1,row=1)
 
 # Traces for 2-C
 fig.add_trace(go.Scatter(x=time,y=mean_AE,mode='lines',
@@ -113,41 +126,41 @@ fig.add_trace(go.Scatter(x=time,y=mean_AE-std_AE,
                          marker=dict(color="#444"),line=dict(width=0),mode='lines',
                          fillcolor='rgba(75,   0, 130, 0.3)',fill='tonexty',showlegend=False),row=2,col=1)
 # Enhancing the plot
-fig.update_yaxes(title_text="Channels per bin (in %)",range=(0,4),row=1,col=1)
-fig.update_xaxes(title_text="Bin Index",range=(0,7000),row=1,col=1) #Change here for X axis of 2-A,B
+fig.update_yaxes(title_text="Channels per bin (in %)",range=(0,16),row=1,col=1)
+fig.update_xaxes(title_text="Bin Index",range=(0,100),row=1,col=1) #Change here for X axis of 2-A,B
 fig.update_xaxes(title_text="Bin Index",row=1,col=2)
 
-fig.update_yaxes(title_text="average AE",range=(4.8,6),row=2,col=1) #Change here for Y axis of 2-C
+fig.update_yaxes(title_text="average AE",range=(2.6,5),row=2,col=1) #Change here for Y axis of 2-C
 fig.update_xaxes(title_text="Time (in Mins)",row=2,col=1)
 
-## Adding vertical lines in 2-C for T1,T2 and seizure onset
-fig.add_shape(dict(type="line",x0=3,y0=4.8,x1=3,y1=6,line=dict(color="red", width=3)),row=2,col=1)
+# Adding vertical lines in 2-C for T1,T2 and seizure onset
+fig.add_shape(dict(type="line",x0=3,y0=2.6,x1=3,y1=5,line=dict(color="red", width=3)),row=2,col=1)
 
-fig.add_shape(dict(type="line",x0=2.5,y0=4.8,x1=2.5,y1=6,line=dict(color="black", dash='dashdot',width=1.5)),row=2,col=1)
-fig.add_shape(dict(type="line",x0=4,y0=4.8,x1=4,y1=6,line=dict(color="black", dash='dashdot',width=1.5)),row=2,col=1)
+fig.add_shape(dict(type="line",x0=2.5,y0=2.6,x1=2.5,y1=5,line=dict(color="black", dash='dashdot',width=1.5)),row=2,col=1)
+fig.add_shape(dict(type="line",x0=4,y0=2.6,x1=4,y1=5,line=dict(color="black", dash='dashdot',width=1.5)),row=2,col=1)
 
-## Adding annotations for Mean AE from 2-C to 2-A,B
+# Adding annotations for Mean AE from 2-C to 2-A,B
 fig.add_annotation(dict(text="mean AE "+str(np.round(mean_AE[time==st][0],decimals=2)),xref='x',yref='y',
-               x=1500,y=3.25,showarrow=False),
-               font=dict(size=30, color="black",family="Times new Roman"),
-               row=1, col=1)
+                x=40,y=9,showarrow=False),
+                font=dict(size=30, color="black",family="Times new Roman"),
+                row=1, col=1)
 fig.add_annotation(dict(text="mean AE "+str(np.round(mean_AE[time==ut][0],decimals=2)),xref='x',yref='y',
-               x=1500,y=3.25,showarrow=False),
-               font=dict(size=30, color="black",family="Times new Roman"),
-               row=1, col=2)
+                x=40,y=9,showarrow=False),
+                font=dict(size=30, color="black",family="Times new Roman"),
+                row=1, col=2)
 
-## Enhancing the plot
+# Enhancing the plot
 fig.add_annotation(dict(text="T1",xref='x',yref='y',
-       x=2.46,y=5.85,showarrow=False),font=dict(size=30, color="black",family="Times new Roman"),
-       row=2, col=1)
+        x=2.46,y=4.85,showarrow=False),font=dict(size=30, color="black",family="Times new Roman"),
+        row=2, col=1)
 
 fig.add_annotation(dict(text="T2",xref='x',yref='y',
-       x=4.06,y=4.9,showarrow=False),font=dict(size=30, color="black",family="Times new Roman"),
-       row=2, col=1)
+        x=4.06,y=2.9,showarrow=False),font=dict(size=30, color="black",family="Times new Roman"),
+        row=2, col=1)
 
 fig.add_annotation(dict(text="seizure onset",xref='x',yref='y',
-       x=3.18,y=5.85,showarrow=False),font=dict(size=30, color="red",family="Times new Roman"),
-       row=2, col=1)
+        x=3.18,y=4.85,showarrow=False),font=dict(size=30, color="red",family="Times new Roman"),
+        row=2, col=1)
 
 fig.update_layout(
         template="plotly_white",
@@ -167,6 +180,6 @@ fig.for_each_yaxis(lambda y: y.update(
 
 
 fig.show()
-#fig.write_image("../images/Fig2_bin1.png")
+#fig.write_image("../images/Fig2.png")
 # fig.write_html("../images/Fig2.html")
 
