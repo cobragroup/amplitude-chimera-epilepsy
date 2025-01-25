@@ -20,35 +20,41 @@ bin_size=10;
 #Time-points to show in SM6
 st=2.5;ut=4; #This should match the values generated in "unfiltered_data_gen.py"
         
+#data_load_path="../../Code_4/data/"
+data_load_path="../../Code_5_sci_rep_review_1_test/data/"
+
 ##SUP Figure - 6
-outp=pd.read_json("../data/all_unfiltered_electrode_data_Swiss-Short_"+str(st)+"_"+str(ut)+".json",orient="records")
+outp=pd.read_json(data_load_path+"all_unfiltered_electrode_data_Swiss-Short_"+str(st)+"_"+str(ut)+"_bin"+str(bin_size)+".json",orient="records")
 #Columns: pat_ID - elec_no - X_t1 - X_t2 - ampen_t1 - ampen_t2 - elecs_t1 - elecs_t2    
 
 # The plot
 
 for pid in range(1,17):
     s=outp.query('pat_id=="ID'+str(pid)+'"')[['ampen_t1','elecs_t1','X_t1','X_t2','ampen_t2','elecs_t2']]
-    #replacing 0s with np.nan
-    s['elecs_t1'] = s['elecs_t1'].apply(lambda x: [np.nan if val==0.0 else val for val in x])
-    #replacing 0s with np.nan
-    s['elecs_t2'] = s['elecs_t2'].apply(lambda x: [np.nan if val==0.0 else val for val in x])
-    #Not bothering with X_t1,X_t2 and ampen_t1,ampen_t2 as they are same and don't have 0s
+    # #replacing 0s with np.nan
+    # s['elecs_t1'] = s['elecs_t1'].apply(lambda x: [np.nan if val==0.0 else val for val in x])
+    # #replacing 0s with np.nan
+    # s['elecs_t2'] = s['elecs_t2'].apply(lambda x: [np.nan if val==0.0 else val for val in x])
+    # #Not bothering with X_t1,X_t2 and ampen_t1,ampen_t2 as they are same and don't have 0s
 
-    y1m = np.nanmean(np.array(s['elecs_t1'].tolist()),axis=0)
-    x1m = np.nanmean(np.array(s['X_t1'].tolist()),axis=0)
+    y1m = np.mean(np.array(s['elecs_t1'].tolist()),axis=0)
+    x1m = np.mean(np.array(s['X_t1'].tolist()),axis=0)
+    
     if (pid not in [7,10]): #ID7 and ID10 don't have T2 in Seizure
-        y2m = np.nanmean(np.array(s['elecs_t2'].tolist()),axis=0)
-        x2m = np.nanmean(np.array(s['X_t2'].tolist()),axis=0)
+        y2m = np.mean(np.array(s['elecs_t2'].tolist()),axis=0)
+        x2m = np.mean(np.array(s['X_t2'].tolist()),axis=0)
 
+    widx=5
+    ##### Plotting with zero counts an normal mean
     f,ax=plt.subplots(figsize=(20,10))
-    ax.bar(x1m[~np.isnan(y1m)],y1m[~np.isnan(y1m)],width=3,color='red',label="T1="+str(st)+"min")
+    ax.bar(range(len(x1m)),np.array(y1m)*100,width=widx,alpha=0.5,color='red',label="T1="+str(st)+"min")
 
     if (pid not in [7,10]):#ID7 and ID10 don't have T2 in Seizure
-        ax.bar(x2m[~np.isnan(y2m)]+4,y2m[~np.isnan(y2m)],width=3,color='blue',label="T2="+str(ut)+"min")
+        ax.bar(np.array(range(len(x2m)))+widx+1,np.array(y2m)*100,width=widx,alpha=0.5,color='blue',label="T2="+str(ut)+"min")
         
     ax.set_title("ID"+str(pid),fontsize=20)
-
-    ax.set_ylabel("Channels per bin (in fraction)",fontsize=40)
+    ax.set_xlim(0,650)
+    ax.set_ylabel("Channels per bin (in %)",fontsize=40)
     ax.set_xlabel("Bin Index",fontsize=40)
     ax.tick_params(axis='both', which='major', labelsize=20)
     ax.legend(fontsize="60")
