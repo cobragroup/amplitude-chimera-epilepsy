@@ -120,7 +120,7 @@ for dframes in all_res:
         if not r.empty:
             out=pd.concat([out,r], ignore_index=True)
         
-out.to_json(os.path.join(data_save_path,"all_unfiltered_data_AE_Swiss-Short_normed_time_"+str(bin_size)+".json"), orient='records')
+out.to_json(os.path.join(data_save_path,"all_unfiltered_data_AE_Swiss-Short_normed_time_bin"+str(bin_size)+".json"), orient='records')
 
 # Mean patient AEs with time (which is averaged over seizures per patient)
 def nans(pid):
@@ -140,7 +140,7 @@ for i in range(1,17):
     output['std_AE'].append(b)
 
 df=pd.DataFrame.from_dict(output)
-df.to_json(os.path.join(data_save_path,"all_unfiltered_mean_AE_Swiss-Short_normed_time_"+str(bin_size)+".json"), orient='records')
+df.to_json(os.path.join(data_save_path,"all_unfiltered_mean_AE_Swiss-Short_normed_time_bin"+str(bin_size)+".json"), orient='records')
 
 
 # Saving PMF for all time-points across electrodes for Fig 2-A,B
@@ -267,4 +267,4 @@ def elecs(t1,t2):
 
 
 outp=pd.DataFrame.from_dict(elecs(st,ut))
-outp.to_json(os.path.join(data_save_path,"all_unfiltered_electrode_data_Swiss-Short_"+str(st)+"_"+str(ut)+"_normed_time_"+str(bin_size)+".json"), orient='records')
+outp.to_json(os.path.join(data_save_path,"all_unfiltered_electrode_data_Swiss-Short_"+str(st)+"_"+str(ut)+"_normed_time_bin"+str(bin_size)+".json"), orient='records')
