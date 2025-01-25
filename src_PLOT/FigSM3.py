@@ -17,11 +17,12 @@ t1=2;t2=5;
 #Time-points to show in SM6
 st=2.5;ut=4; #This should match the values generated in "unfiltered_data_gen.py"
         
-        
-data_load_path="../../Code_4/data/"
+
+#data_load_path="../../Code_4/data/"
+data_load_path="../../Code_5_sci_rep_review_1_test/data/"
 
 ##SUP Figure - 6
-df=pd.read_json(data_load_path+"all_unfiltered_mean_AE_Swiss-Short.json",orient="records")
+df=pd.read_json(data_load_path+"all_unfiltered_mean_AE_Swiss-Short_bin"+str(bin_size)+".json",orient="records")
 #Columns: pat_ID - elec_no - mean_AE - std_AE
 
 # The plot
@@ -63,8 +64,8 @@ fig.update_xaxes(title_text="Time (in Mins)")
 
 fig.add_shape(dict(type="line",x0=3,y0=2.8,x1=3,y1=5,line=dict(color="red", width=3)))
 
-# fig.add_annotation(dict(text="seizure onset",xref='x',yref='y',
-#         x=3.18,y=4.8,showarrow=False),font=dict(size=30, color="red",family="Times new Roman"))
+fig.add_annotation(dict(text="seizure onset",xref='x',yref='y',
+        x=1.5,y=4.8,showarrow=False),font=dict(size=30, color="red",family="Times new Roman"))
 
 
 
@@ -86,9 +87,9 @@ fig.write_image("../images/FigSM4a.png")
 
 
 #Plotting the same figure ignoring the largest seizure of ID14 
-#Taking only a seizure slice of 4 min or 240 seconds, which is the largest seizure length and averaging over them
-largest_seizure_length=240
-out=pd.read_json(data_load_path+"all_unfiltered_data_AE_Swiss-Short.json",orient="records")
+#Taking only a seizure slice of ~5 min or 301 seconds, which is the second largest seizure length and averaging over them
+largest_seizure_length=301 #in seconds
+out=pd.read_json(data_load_path+"all_unfiltered_data_AE_Swiss-Short_bin"+str(bin_size)+".json",orient="records")
 # Mean patient AEs with time (which is averaged over seizures per patient)
 def nans(pid,considered_window_after_seizure):
     ss=[]
@@ -101,7 +102,7 @@ def nans(pid,considered_window_after_seizure):
             # vstacking to make all the segments of same length
             #first 3 mins of pre seizure  #seziure segment # np.nan of a length #last 3 mins of post seizure
             #largest seizure is 1002 secs so making all seziure segments as 1005 secs with np.nan padding
-            new_rg=np.hstack((rg,np.full(shape=((1005*sampling_rate) - len(rg)), fill_value=np.nan)))
+            new_rg=np.hstack((rg,np.full(shape=((1002*sampling_rate) - len(rg)), fill_value=np.nan)))
             #To remove the largest seizure of ID14
             #stacking whole pre-seizure segment, seizure segment (of length considered_window_after_seizure in s) and post-seizure segment 
             new_aa=np.hstack((tmp[:(3*60*sampling_rate)],new_rg[:(considered_window_after_seizure*sampling_rate)],tmp[(no_datapoints - (3*60*sampling_rate)):]))
@@ -168,8 +169,8 @@ fig.update_xaxes(title_text="Time (in Mins)")
 
 fig.add_shape(dict(type="line",x0=3,y0=2.8,x1=3,y1=5,line=dict(color="red", width=3)))
 
-# fig.add_annotation(dict(text="seizure onset",xref='x',yref='y',
-#         x=3.18,y=4.8,showarrow=False),font=dict(size=30, color="red",family="Times new Roman"))
+fig.add_annotation(dict(text="seizure onset",xref='x',yref='y',
+        x=2.25,y=4.8,showarrow=False),font=dict(size=30, color="red",family="Times new Roman"))
 
 
 fig.add_shape(dict(type="line",x0=st,y0=2.8,x1=st,y1=5,line=dict(color="black", dash='dashdot',width=2)))

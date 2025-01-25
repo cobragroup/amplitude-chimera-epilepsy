@@ -175,7 +175,7 @@ fig.update_annotations(font=dict(family="Times new Roman", size=30))
 
 
 
-fig.show()
+# fig.show()
 fig.write_image("../images/Fig3_bin1.png")
 # fig.write_html("../images/Fig3.html")
 

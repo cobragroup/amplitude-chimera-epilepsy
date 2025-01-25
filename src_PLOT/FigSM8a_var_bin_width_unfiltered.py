@@ -179,7 +179,7 @@ fig.for_each_yaxis(lambda y: y.update(
     gridwidth=2, gridcolor="rgba(0,0,0,0.35)",showgrid=True, showline=True, linewidth=2, linecolor='black', mirror=True))
 
 
-fig.show()
-#fig.write_image("../images/Fig2S_bin1_7000.png")
+# fig.show()
+fig.write_image("../images/Fig2S_bin1_7000.png")
 # fig.write_html("../images/Fig2.html")
 

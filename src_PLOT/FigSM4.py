@@ -18,10 +18,11 @@ t1=2;t2=5;
 #Time-points to show in SM5
 st=2.5;ut=4; #This should match the values generated in "unfiltered_data_gen.py"
         
-data_load_path="../../Code_4/data/"
+#data_load_path="../../Code_4/data/"
+data_load_path="../../Code_5_sci_rep_review_1_test/data/"
 
 ##SUP Figure - 5
-df=pd.read_json(data_load_path+"all_unfiltered_mean_AE_Swiss-Short.json",orient="records")
+df=pd.read_json(data_load_path+"all_unfiltered_mean_AE_Swiss-Short_bin"+str(bin_size)+".json",orient="records")
 #Columns: pat_ID - elec_no - mean_AE - std_AE
 
 # The 5 plot
@@ -72,5 +73,5 @@ fig.for_each_xaxis(lambda x: x.update(gridwidth=2,showgrid=True,showline=True, l
 fig.for_each_yaxis(lambda x: x.update(gridwidth=2,showgrid=True,showline=True, linewidth=2, linecolor='black', mirror=True))
 
 fig.show()
-#fig.write_image("../images/FigSM2.png")
+fig.write_image("../images/FigSM2.png")
 # fig.write_html("../images/FigSM2.html")
