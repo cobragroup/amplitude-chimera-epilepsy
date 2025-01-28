@@ -6,6 +6,8 @@ import os
 import glob
 import multiprocessing as mp
 
+from scipy.interpolate import UnivariateSpline
+
 import warnings
 warnings.filterwarnings("ignore")
 #to supress RuntimeWarning: Mean of empty slice
@@ -17,6 +19,7 @@ warnings.filterwarnings("ignore")
 sampling_rate=512;
 bin_size=10;
 total_patients=16;
+smooth=0;
 no_of_workers_in_pool=mp.cpu_count();
 # Time points for Fig 2-A,B (2.5 mins and 4 mins) 
 # Make sure this matches with the Fig 2-A,B generation code
@@ -72,7 +75,30 @@ def unfiltered_data_AE_Worker(params):
         output_events['sez_id'].append(sz_id)#Recorded in seconds
         output_events['sez_len'].append(sez_length)#Recorded in seconds
         output_events['elec_no'].append(no_elec)
-        output_events['AE'].append(amp_en(data))
+
+
+        #upscaled Normalized time for each seizure segment
+        #largest seizure is 1005 secs so making all seziure segments as 1005 secs with interpolation
+        normed_time = np.linspace(0, 1, (1005*sampling_rate), endpoint=True)       
+        #no_of_rows= electrode numbers #no_of_columns=180 sec of pre and post and 1005 sec of seizure segment
+        new_data=np.zeros(((1005*sampling_rate)+(2*(3*60*sampling_rate)),no_elec));
+
+        #Interpolating in Time to make all seizure segments same length
+        for ch in range(no_elec):
+            tmp=data[:,ch]
+            no_datapoints = len(tmp)
+
+
+            rg=tmp[(3*60*sampling_rate) : (no_datapoints - (3*60*sampling_rate))] #Seizure Segment
+            tme = np.linspace(0, 1,len(rg), endpoint=True)
+            sez_intep=UnivariateSpline(tme, np.array(rg), w=None, k=3, s=smooth,ext=3)
+            new_rg=sez_intep(normed_time)
+
+            #Automatically ensures that the seizure segment is 1005 secs long
+            new_data[:,ch]=np.hstack((tmp[:(3*60*sampling_rate)],new_rg,tmp[(no_datapoints - (3*60*sampling_rate)):]))
+
+
+        output_events['AE'].append(amp_en(new_data))
         
         return pd.DataFrame.from_dict(output_events)
 
@@ -94,24 +120,13 @@ for dframes in all_res:
         if not r.empty:
             out=pd.concat([out,r], ignore_index=True)
         
-out.to_json(os.path.join(data_save_path,"all_unfiltered_data_AE_Swiss-Short_bin"+str(bin_size)+".json"), orient='records')
+out.to_json(os.path.join(data_save_path,"all_unfiltered_data_AE_Swiss-Short_normed_time_bin"+str(bin_size)+".json"), orient='records')
 
 # Mean patient AEs with time (which is averaged over seizures per patient)
-## AE Series is padded with NaNs to make all the AE series for different seizures are of same length
 def nans(pid):
     ss=[]
     for s in out.query('pat_id=="ID'+str(pid)+'"')[['sez_len','AE']].iterrows():
-        tmp=s[1]['AE']
-        lng=s[1]['sez_len']
-        no_datapoints = len(tmp)
-        rg=tmp[(3*60*sampling_rate) : (no_datapoints - (3*60*sampling_rate))] #Seizure Segment
-        if (len(rg)/sampling_rate)== lng:
-            # vstacking to make all the segments of same length
-            #first 3 mins of pre seizure  #seziure segment # np.nan of a length #last 3 mins of post seizure
-            #largest seizure is 1002 secs so making all seziure segments as 1005 secs with np.nan padding
-            new_rg=np.hstack((rg,np.full(shape=((1005*sampling_rate) - len(rg)), fill_value=np.nan)))
-            new_aa=np.hstack((tmp[:(3*60*sampling_rate)],new_rg,tmp[(no_datapoints - (3*60*sampling_rate)):]))
-            ss.append(new_aa)
+        ss.append(s[1]['AE'])
     return np.nanmean(np.array(ss),axis=0),np.nanstd(np.array(ss),axis=0,ddof=1) 
 
 output={'pat_ID':[],'elec_no':[],'mean_AE':[],'std_AE':[]}
@@ -125,7 +140,7 @@ for i in range(1,17):
     output['std_AE'].append(b)
 
 df=pd.DataFrame.from_dict(output)
-df.to_json(os.path.join(data_save_path,"all_unfiltered_mean_AE_Swiss-Short_bin"+str(bin_size)+".json"), orient='records')
+df.to_json(os.path.join(data_save_path,"all_unfiltered_mean_AE_Swiss-Short_normed_time_bin"+str(bin_size)+".json"), orient='records')
 
 
 # Saving PMF for all time-points across electrodes for Fig 2-A,B
@@ -135,12 +150,10 @@ def pmf_calc(chans,mins,maxs):
     pmf = hist / np.sum(hist)
     return np.array(pmf),np.array(bin_edges)
 
-
 def elecs(t1,t2):
     t1_index=int(np.ceil(t1*60*sampling_rate)) #Changing from Mins to indices with the sampling rate
     t2_index=int(np.ceil(t2*60*sampling_rate))
 
-    ## Finding the max and min values of X_t1 and X_t2 (max/min channel amplitudes) across all patients and seizures for T1 and T2 time-points
     xt1=[];xt2=[];
     for patid in range(1,17):
         mat_files = glob.glob(os.path.join(data_in_path+"ID"+str(patid), '*.mat'))
@@ -149,11 +162,33 @@ def elecs(t1,t2):
         for i in range(1,no_of_seizures+1):
             filename = os.path.join(data_in_path, "ID"+str(patid)+"/Sz"+str(i)+".mat")
             mat=scipy.io.loadmat(filename)
-            alldata=np.array(mat.get('EEG'))
+            data=np.array(mat.get('EEG'))
+            no_elec=np.shape(data)[1]
+            ####Using Normed Time####
 
-            number_of_datapoints, number_of_channels = alldata.shape    
+            #upscaled Normalized time for each seizure segment
+            #largest seizure is 1005 secs so making all seziure segments as 1005 secs with interpolation
+            normed_time = np.linspace(0, 1, (1005*sampling_rate), endpoint=True)       
+            #no_of_rows= electrode numbers #no_of_columns=180 sec of pre and post and 1005 sec of seizure segment
+            alldata=np.zeros(((1005*sampling_rate)+(2*(3*60*sampling_rate)),no_elec));
+
+            #Interpolating in Time to make all seizure segments same length
+            for ch in range(no_elec):
+                tmp=data[:,ch]
+                no_datapoints = len(tmp)
+
+
+                rg=tmp[(3*60*sampling_rate) : (no_datapoints - (3*60*sampling_rate))] #Seizure Segment
+                tme = np.linspace(0, 1,len(rg), endpoint=True)
+                sez_intep=UnivariateSpline(tme, np.array(rg), w=None, k=3, s=smooth,ext=3)
+                new_rg=sez_intep(normed_time)
+
+                #Automatically ensures that the seizure segment is 1005 secs long
+                alldata[:,ch]=np.hstack((tmp[:(3*60*sampling_rate)],new_rg,tmp[(no_datapoints - (3*60*sampling_rate)):]))
+
+
+            number_of_datapoints, number_of_channels = alldata.shape
             Aamplitude = np.empty((number_of_datapoints, number_of_channels))
-
             for j in range(number_of_channels):
                 Aamplitude[:, j] = np.abs(scipy.signal.hilbert(alldata[:, j]))
             
@@ -161,12 +196,10 @@ def elecs(t1,t2):
             _,x2=pmf_calc(Aamplitude[t2_index,:],np.min(Aamplitude[t2_index,:]),np.max(Aamplitude[t2_index,:]))
             xt1.append(x1);xt2.append(x2);
             
-    ot1=np.concatenate(xt1);ot2=np.concatenate(xt2); 
-
-    # Max/Min bin_edge for Channel amplitudes across all patients and seizures for T1 and T2 time-points       
+    ot1=np.concatenate(xt1);ot2=np.concatenate(xt2);        
     max_xt1=np.ceil(np.max(ot1)).astype(int);min_xt1=np.floor(np.min(ot1)).astype(int);
     max_xt2=np.ceil(np.max(ot2)).astype(int);min_xt2=np.floor(np.min(ot2)).astype(int);
-    print("Max/Min bin_edge for Channel amplitudes across all patients and seizures for T1 and T2 time-points:\n",max_xt1,min_xt1,max_xt2,min_xt2)
+    print(max_xt1,min_xt1,max_xt2,min_xt2)
     
     
     outs={'fileID':[],'pat_id':[],'sez_id':[],'sez_len':[],'elec_no':[],'X_t1':[],'X_t2':[],'ampen_t1':[],'ampen_t2':[],'elecs_t1':[],'elecs_t2':[]}
@@ -179,7 +212,29 @@ def elecs(t1,t2):
             #print(patid,",",i)
             filename = os.path.join(data_in_path, "ID"+str(patid)+"/Sz"+str(i)+".mat")
             mat=scipy.io.loadmat(filename)
-            alldata=np.array(mat.get('EEG'))
+            data=np.array(mat.get('EEG'))
+            no_elec=np.shape(data)[1]
+            ####Using Normed Time####
+            
+            #upscaled Normalized time for each seizure segment
+            #largest seizure is 1005 secs so making all seziure segments as 1005 secs with interpolation
+            normed_time = np.linspace(0, 1, (1005*sampling_rate), endpoint=True)       
+            #no_of_rows= electrode numbers #no_of_columns=180 sec of pre and post and 1005 sec of seizure segment
+            alldata=np.zeros(((1005*sampling_rate)+(2*(3*60*sampling_rate)),no_elec));
+
+            #Interpolating in Time to make all seizure segments same length
+            for ch in range(no_elec):
+                tmp=data[:,ch]
+                no_datapoints = len(tmp)
+
+
+                rg=tmp[(3*60*sampling_rate) : (no_datapoints - (3*60*sampling_rate))] #Seizure Segment
+                tme = np.linspace(0, 1,len(rg), endpoint=True)
+                sez_intep=UnivariateSpline(tme, np.array(rg), w=None, k=3, s=smooth,ext=3)
+                new_rg=sez_intep(normed_time)
+
+                #Automatically ensures that the seizure segment is 1005 secs long
+                alldata[:,ch]=np.hstack((tmp[:(3*60*sampling_rate)],new_rg,tmp[(no_datapoints - (3*60*sampling_rate)):]))
 
             number_of_datapoints, number_of_channels = alldata.shape    
             Aamplitude = np.empty((number_of_datapoints, number_of_channels))
@@ -212,4 +267,4 @@ def elecs(t1,t2):
 
 
 outp=pd.DataFrame.from_dict(elecs(st,ut))
-outp.to_json(os.path.join(data_save_path,"all_unfiltered_electrode_data_Swiss-Short_"+str(st)+"_"+str(ut)+"_bin"+str(bin_size)+".json"), orient='records')
+outp.to_json(os.path.join(data_save_path,"all_unfiltered_electrode_data_Swiss-Short_"+str(st)+"_"+str(ut)+"_normed_time_bin"+str(bin_size)+".json"), orient='records')

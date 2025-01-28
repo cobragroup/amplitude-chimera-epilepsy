@@ -14,15 +14,14 @@ from plotly.subplots import make_subplots
 sampling_rate=512;
 bin_size=10;
 #Time-slice to show in SM5
-t1=2;t2=5;
+t1=0;t2=22;
 #Time-points to show in SM5
 st=2.5;ut=4; #This should match the values generated in "unfiltered_data_gen.py"
         
-#data_load_path="../../Code_4/data/"
 data_load_path="../../Code_5_sci_rep_review_1_test/data/"
 
 ##SUP Figure - 5
-df=pd.read_json(data_load_path+"all_unfiltered_mean_AE_Swiss-Short_bin"+str(bin_size)+".json",orient="records")
+df=pd.read_json(data_load_path+"all_unfiltered_mean_AE_Swiss-Short_normed_time_bin"+str(bin_size)+".json",orient="records")
 #Columns: pat_ID - elec_no - mean_AE - std_AE
 
 # The 5 plot
@@ -47,10 +46,20 @@ for ridx in range(1,9): #iterate over rows
         pid+=1
 
 # Adding vertical lines to show the T1 and T2 and seizure onset 
+## Onset of Seizure
 fig.add_shape(dict(type="line",x0=3,y0=1.5,x1=3,y1=6,line=dict(color="red", width=3)),row="all",col="all")
-
 fig.add_annotation(dict(text="seizure onset",xref='x',yref='y',
-        x=2.6,y=5.7,showarrow=False),font=dict(size=10, color="red",family="Times new Roman"),row="all",col="all")
+        x=3.18,y=5.7,showarrow=False),font=dict(size=10, color="red",family="Times new Roman"),
+        row="all", col="all")
+
+
+## offset of Seizure ## Seizure lasts for 1005 seconds () and starts at 3 mins
+fig.add_shape(dict(type="line",x0=(3+(1005/60)),y0=1.5,x1=(3+(1005/60)),y1=6,line=dict(color="red", width=3)),row="all",col="all")
+fig.add_annotation(dict(text="seizure offset",xref='x',yref='y',
+        x=19.18,y=5.7,showarrow=False),font=dict(size=10, color="red",family="Times new Roman"),
+        row="all", col="all")
+
+
 
 
 fig.add_shape(dict(type="line",x0=2.5,y0=1.5,x1=2.5,y1=6,line=dict(color="green", dash='dashdot',width=2)),row="all",col="all")
@@ -72,6 +81,6 @@ fig.update_annotations(font=dict(family="Times new Roman", size=30))
 fig.for_each_xaxis(lambda x: x.update(gridwidth=2,showgrid=True,showline=True, linewidth=2, linecolor='black', mirror=True))
 fig.for_each_yaxis(lambda x: x.update(gridwidth=2,showgrid=True,showline=True, linewidth=2, linecolor='black', mirror=True))
 
-fig.show()
-fig.write_image("../images/FigSM2.png")
+# fig.show()
+fig.write_image("../images/FigSM2_normed_time.png")
 # fig.write_html("../images/FigSM2.html")

@@ -1,70 +1,78 @@
 
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt  
 
 import warnings
 warnings.filterwarnings("ignore")
 #to supress RuntimeWarning: Mean of empty slice
 
 
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
-
+#Creating folder for the SM9 figures
+import os
+if not os.path.exists('../images/figSM3'):
+   os.makedirs('../images/figSM3')
+   
+   
 #Global variables
 sampling_rate=512;
 bin_size=10;
-#Time-slice to show in SM5
-t1=2;t2=5;
-#Time-points to show in SM5
+#Time-points to show in SM6
 st=2.5;ut=4; #This should match the values generated in "unfiltered_data_gen.py"
         
-##SUP Figure - 5
-df=pd.read_json("../data/all_unfiltered_mean_AE_Swiss-Short.json",orient="records")
-#Columns: pat_ID - elec_no - mean_AE - std_AE
+#data_load_path="../../Code_4/data/"
+data_load_path="../../Code_5_sci_rep_review_1_test/data/"
 
-# The 5 plot
-no_of_timepoints=len(df['mean_AE'][0])
-time=np.arange(0,no_of_timepoints)/(60*sampling_rate) #in minutes
+##SUP Figure - 6
+outp=pd.read_json(data_load_path+"all_unfiltered_electrode_data_Swiss-Short_"+str(st)+"_"+str(ut)+"_bin"+str(bin_size)+".json",orient="records")
+#Columns: pat_ID - elec_no - X_t1 - X_t2 - ampen_t1 - ampen_t2 - elecs_t1 - elecs_t2    
 
-fig= make_subplots(rows=8, cols=2,vertical_spacing=0.024,horizontal_spacing=0.02,shared_xaxes='all',shared_yaxes='all',subplot_titles=("ID1","ID2","ID3","ID4","ID5","ID6","ID7","ID8","ID9","ID10","ID11","ID12","ID13","ID14","ID15","ID16"))
+# The plot
 
-pid=1 #patient ID
-for ridx in range(1,9): #iterate over rows
-    for cidx in range(1,3): #iterate over columns
-        tim=time[(t1*60*sampling_rate):(t2*60*sampling_rate)] #showing only time-slice between t1 and t2
-        mean=np.array(df.loc[pid-1]['mean_AE'][(t1*60*sampling_rate):(t2*60*sampling_rate)])
-        mean[np.equal(mean, None)]=np.nan #Replace None with 0.0
-        #stdd=np.array(df.loc[pid-1]['std_aa'][(2*60*sampling_rate):(5*60*sampling_rate)]) #not showing the std
+for pid in range(1,17):
+    s=outp.query('pat_id=="ID'+str(pid)+'"')[['ampen_t1','elecs_t1','X_t1','X_t2','ampen_t2','elecs_t2']]
+    # #replacing 0s with np.nan
+    # s['elecs_t1'] = s['elecs_t1'].apply(lambda x: [np.nan if val==0.0 else val for val in x])
+    # #replacing 0s with np.nan
+    # s['elecs_t2'] = s['elecs_t2'].apply(lambda x: [np.nan if val==0.0 else val for val in x])
+    # #Not bothering with X_t1,X_t2 and ampen_t1,ampen_t2 as they are same and don't have 0s
 
-        fig.add_trace(go.Scatter(x=tim,y=mean,
-                                mode='lines',
-                                line=dict(width=0.5),
-                                showlegend=False,
-                                ),row=ridx,col=cidx)
-        pid+=1
+    y1m = np.mean(np.array(s['elecs_t1'].tolist()),axis=0)
+    x1m = np.mean(np.array(s['X_t1'].tolist()),axis=0)
+    
+    if (pid not in [7,10]): #ID7 and ID10 don't have T2 in Seizure
+        y2m = np.mean(np.array(s['elecs_t2'].tolist()),axis=0)
+        x2m = np.mean(np.array(s['X_t2'].tolist()),axis=0)
 
-# Adding vertical lines to show the T1 and T2 and seizure onset 
-fig.add_shape(dict(type="line",x0=3,y0=1.5,x1=3,y1=6,line=dict(color="red", width=3)),row="all",col="all")
+    widx=5
+    ##### Plotting with zero counts an normal mean
+    f,ax=plt.subplots(figsize=(20,10))
+    ax.bar(range(len(x1m)),np.array(y1m)*100,width=widx,alpha=0.5,color='red',label="T1="+str(st)+"min")
 
-fig.add_shape(dict(type="line",x0=2.5,y0=1.5,x1=2.5,y1=6,line=dict(color="green", dash='dashdot',width=2)),row="all",col="all")
-fig.add_shape(dict(type="line",x0=4,y0=1.5,x1=4,y1=6,line=dict(color="green",dash='dashdot',width=2)),row="all",col="all")
+    if (pid not in [7,10]):#ID7 and ID10 don't have T2 in Seizure
+        ax.bar(np.array(range(len(x2m)))+widx+1,np.array(y2m)*100,width=widx,alpha=0.5,color='blue',label="T2="+str(ut)+"min")
+        
+    ax.set_title("ID"+str(pid),fontsize=20)
+    ax.set_xlim(0,650)
+    ax.set_ylabel("Channels per bin (in %)",fontsize=40)
+    ax.set_xlabel("Bin Index",fontsize=40)
+    ax.tick_params(axis='both', which='major', labelsize=20)
+    ax.legend(fontsize="60")
+    ax.grid()
 
-# Enhancing the plot
-fig.update_xaxes(title_text="Time (in Mins)",range=(t1,t2),row=8,col=1)
-fig.update_xaxes(title_text="Time (in Mins)",range=(t1,t2),row=8,col=2)
-for i in range(1,9):
-    fig.update_yaxes(title_text="average AE",range=(1.5,6),row=i,col=1)
-
-fig.update_layout(
-        title_text="Average AE for all subjects",
-        template="simple_white",
-        legend=dict(orientation="h",yanchor="bottom",y=1.02,xanchor="center",x=0.5,font=dict(size=40)),
-        font_family="Times new Roman",font_color="black",font_size=25,height=1800,width=1500)
-fig.update_annotations(font=dict(family="Times new Roman", size=30))
-
-fig.for_each_xaxis(lambda x: x.update(gridwidth=2,showgrid=True,showline=True, linewidth=2, linecolor='black', mirror=True))
-fig.for_each_yaxis(lambda x: x.update(gridwidth=2,showgrid=True,showline=True, linewidth=2, linecolor='black', mirror=True))
-
-fig.show()
-#fig.write_image("../images/FigSM2.png")
-# fig.write_html("../images/FigSM2.html")
+    if pid not in [7,10]:#ID7 and ID10 don't have T2 in Seizure
+        textstr = '\n'.join((
+            r'$\mathrm{AE_{T1}}=%.2f$' % (s['ampen_t1'].mean()),
+            r'$\mathrm{AE_{T2}}=%.2f$' % (s['ampen_t2'].mean())))
+        # place a text box in upper left in axes coords
+        ax.text(0.7, 0.45, textstr, transform=ax.transAxes, fontsize=50,verticalalignment='top')
+    else:
+        textstr = '\n'.join((
+            r'$\mathrm{AE_{T1}}=%.2f$' % (s['ampen_t1'].mean()),
+            ))
+        # place a text box in upper left in axes coords
+        ax.text(0.7, 0.45, textstr, transform=ax.transAxes, fontsize=50,verticalalignment='top')
+  
+    f.tight_layout()
+    f.savefig("../images/figSM3/FigSM3_ID"+str(pid)+".png")
+    plt.close(f)

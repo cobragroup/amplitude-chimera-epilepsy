@@ -22,7 +22,7 @@ no_of_workers_in_pool=mp.cpu_count();
 
 #Modify the Path here acording to the download location
 data_in_path="/home/sapta/Documents/"
-data_save_path="../data/"
+data_save_path="../../Code_5_sci_rep_review_1_test/data/"
 
 #print("Check for Folders ID1 to ID16 in data_in_path in case of error!!")
 
@@ -95,7 +95,7 @@ def filtered_data_AE_Worker(params):
 all_comb=[(patid,i) for patid in range(1,total_patients+1) for i in range(1,len(glob.glob(os.path.join(data_in_path+"ID"+str(patid), '*.mat')))+1)]
 
 # Running the worker function in parallel
-pool = mp.Pool(mp.cpu_count())
+pool = mp.Pool(no_of_workers_in_pool)
 all_res = [pool.apply_async(filtered_data_AE_Worker, (params,)) for params in all_comb]
 # Close the pool and wait for the work to finish
 pool.close()
@@ -107,7 +107,7 @@ for dframes in all_res:
         if not r.empty:
             data=pd.concat([data,r], ignore_index=True)
         
-data.to_json(os.path.join(data_save_path,"all_data_Swiss-Short.json"), orient='records')
+data.to_json(os.path.join(data_save_path,"all_data_Swiss-Short_bin"+str(bin_size)+".json"), orient='records')
 
 
 # Mean patient AEs with time (which is averaged over seizures per patient)
@@ -153,4 +153,4 @@ for i in data.index:
         }
         df = pd.concat([df, pd.DataFrame([row])], ignore_index=True)
         
-df.to_json(os.path.join(data_save_path,"all_mean_Swiss-Short.json"), orient='records')
+df.to_json(os.path.join(data_save_path,"all_mean_Swiss-Short_bin"+str(bin_size)+".json"), orient='records')
