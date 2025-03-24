@@ -1,0 +1,19 @@
+Patient ID	No of Seizures	No of Electrodes	Min Sez Len	Max Sez Len	mean Sez Len	Age	hemisphere	MRI investigation	MRI	epilepsy lobe	engel outcome
+1	13	47	10	252	71.08	24	L	n	 (neg.)	TLE	2
+2	4	42	96	301	223.25	19	L	y (HCS)	 (pos.)	TLE	1
+3	2	98	73	125	99	25	R	n	 (neg.)	TLE	1
+4	14	62	31	160	97.57	32	L	y (FCD)	 (pos.)	PLE	4
+5	10	54	66	154	98.5	20	R	n	 (neg.)	TLE	2
+6	4	64	89	190	145.75	48	L	y (HCS)	 (pos.)	TLE	1
+7	2	36	14	16	15	31	R	y (TS)	 (pos.)	FLE	4
+8	2	59	52	61	56.5	38	L	n	 (neg.)	TLE	4
+9	9	56	104	198	143.67	27	L	n	 (neg.)	TLE	1
+10	5	100	10	22	14.4	46	R	n	 (neg.)	TLE	2
+11	2	64	83	135	109	26	R	y (HCS)	 (pos.)	TLE	1
+12	10	49	23	93	44.8	59	L	y (space amygdala)	 (pos.)	TLE	4
+13	7	92	19	100	79.71	49	R	y (FCD)	 (pos.)	FLE	2
+14	7	74	154	1002	586.57	36	L	y (pilocytic astrocytoma)	 (pos.)	PLE	1
+15	3	61	52	184	120.67	23	L	n	 (neg.)	TLE	4
+16	6	59	67	117	88	31	L	y (HCS)	 (pos.)	TLE	2
+SUM	100	1017	943	3110	1993.47	534					
+MEAN	6.25	63.5625	58.9375	194.375	124.591875	33.375					
