@@ -1,6 +1,7 @@
 clear all; close all; clc;
 
-data_path = '../data/';
+%% Change the path accordingly
+data_path = 'data/';
 
 data = struct2table(jsondecode(fileread(fullfile(data_path, 'all_mean_Swiss-Short.json'))));
 pat_info = tdfread(fullfile(data_path, 'Swiss Short Seizure Meta-Data - Sez_Meta.tsv'), 'tab');
@@ -125,6 +126,8 @@ temporal=contains(string(pat_info.epilepsy_lobe(pat_sel,:)),'TLE'); % split into
 figure
 p= ranksum(seiz_effect_pat(temporal,:),seiz_effect_pat(~temporal,:));
 boxplot(seiz_effect_pat,[pat_info.epilepsy_lobe(pat_sel,:),pat_info.MRI(pat_sel,:)]); 
+%For MATLAB older than 2018b
+%line([2.5 2.5], ylim, 'Color', 'r', 'LineStyle', '--')
 xline(2.5)
 title(['epilepsy lobe & MRI investigation, p = ',num2str(p)]);
 ylabel('AE seizure effect ( seiz - pre )')
@@ -148,6 +151,8 @@ badoutcome=pat_info.engel_outcome(pat_sel)==4;
 figure
 p=ranksum(seiz_effect_pat(badoutcome),seiz_effect_pat(~badoutcome),'tail','left');
 boxplot(seiz_effect_pat,pat_info.engel_outcome(pat_sel)); 
+%For MATLAB older than 2018b
+%line([2.5 2.5], ylim, 'Color', 'r', 'LineStyle', '--')
 xline(2.5);
 title(['surgery outcome (Engel), p = ',num2str(p)]);
 ylabel('AE seizure effect ( seiz - pre )')
@@ -161,6 +166,9 @@ figure
 %without outlier patient number 14
 p=ranksum(pat_info.mean_Sez_Len(goodoutcome([1:13,15:16])),pat_info.mean_Sez_Len(~goodoutcome([1:13,15:16])));
 boxplot(pat_info.mean_Sez_Len(([1:13,15:16])),pat_info.engel_outcome(([1:13,15:16])))
+
+%For MATLAB older than 2018b
+%line([1.5 1.5], ylim, 'Color', 'r', 'LineStyle', '--')
 xline(1.5);
 ylabel('mean seiz length (s)');
 xlabel('surgery outcome (Engel)');
